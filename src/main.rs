@@ -1,14 +1,13 @@
 #[macro_use]
 extern crate log;
-
-extern crate tui;
+extern crate stderrlog;
 extern crate termion;
+extern crate tui;
 
-mod utils;
+mod util;
 
 use std::io;
 use std::thread;
-use std::env;
 use std::time;
 use std::sync::mpsc;
 
@@ -17,13 +16,13 @@ use termion::input::TermRead;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
-use tui::widgets::{Widget, Block, SelectableList, List, Item, Gauge, Sparkline, Paragraph, border,
-                   Chart, Axis, Dataset, BarChart, Marker, Tabs, Table, Row};
-use tui::widgets::canvas::{Canvas, Map, MapResolution, Line};
-use tui::layout::{Group, Direction, Size, Rect};
-use tui::style::{Style, Color, Modifier};
+use tui::widgets::{Axis, BarChart, Block, Borders, Chart, Dataset, Gauge, Item, List, Marker,
+                   Paragraph, Row, SelectableList, Sparkline, Table, Tabs, Widget};
+use tui::widgets::canvas::{Canvas, Line, Map, MapResolution};
+use tui::layout::{Direction, Group, Rect, Size};
+use tui::style::{Color, Modifier, Style};
 
-use utils::*;
+use util::*;
 
 struct Server<'a> {
     name: &'a str,
@@ -31,7 +30,6 @@ struct Server<'a> {
     coords: (f64, f64),
     status: &'a str,
 }
-
 
 struct App<'a> {
     size: Rect,
@@ -57,14 +55,11 @@ enum Event {
 }
 
 fn main() {
-
-
-    for argument in env::args() {
-        if argument == "--log" {
-            setup_log("demo.log");
-        }
-    }
-
+    stderrlog::new()
+        .module(module_path!())
+        .verbosity(4)
+        .init()
+        .unwrap();
     info!("Start");
 
     let mut rand_signal = RandomSignal::new(0, 100);
@@ -74,30 +69,9 @@ fn main() {
     let mut app = App {
         size: Rect::default(),
         items: vec![
-            "Item1",
-            "Item2",
-            "Item3",
-            "Item4",
-            "Item5",
-            "Item6",
-            "Item7",
-            "Item8",
-            "Item9",
-            "Item10",
-            "Item11",
-            "Item12",
-            "Item13",
-            "Item14",
-            "Item15",
-            "Item16",
-            "Item17",
-            "Item18",
-            "Item19",
-            "Item20",
-            "Item21",
-            "Item22",
-            "Item23",
-            "Item24",
+            "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9",
+            "Item10", "Item11", "Item12", "Item13", "Item14", "Item15", "Item16", "Item17",
+            "Item18", "Item19", "Item20", "Item21", "Item22", "Item23", "Item24",
         ],
         events: vec![
             ("Event1", "INFO"),
@@ -236,33 +210,29 @@ fn main() {
         draw(&mut terminal, &app).unwrap();
         let evt = rx.recv().unwrap();
         match evt {
-            Event::Input(input) => {
-                match input {
-                    event::Key::Char('q') => {
-                        break;
-                    }
-                    event::Key::Up => {
-                        if app.selected > 0 {
-                            app.selected -= 1
-                        };
-                    }
-                    event::Key::Down => {
-                        if app.selected < app.items.len() - 1 {
-                            app.selected += 1;
-                        }
-                    }
-                    event::Key::Left => {
-                        app.tabs.previous();
-                    }
-                    event::Key::Right => {
-                        app.tabs.next();
-                    }
-                    event::Key::Char('t') => {
-                        app.show_chart = !app.show_chart;
-                    }
-                    _ => {}
+            Event::Input(input) => match input {
+                event::Key::Char('q') => {
+                    break;
                 }
-            }
+                event::Key::Up => {
+                    if app.selected > 0 {
+                        app.selected -= 1
+                    };
+                }
+                event::Key::Down => if app.selected < app.items.len() - 1 {
+                    app.selected += 1;
+                },
+                event::Key::Left => {
+                    app.tabs.previous();
+                }
+                event::Key::Right => {
+                    app.tabs.next();
+                }
+                event::Key::Char('t') => {
+                    app.show_chart = !app.show_chart;
+                }
+                _ => {}
+            },
             Event::Tick => {
                 app.progress += 5;
                 if app.progress > 100 {
@@ -296,13 +266,12 @@ fn main() {
 }
 
 fn draw(t: &mut Terminal<MouseBackend>, app: &App) -> Result<(), io::Error> {
-
     Group::default()
         .direction(Direction::Vertical)
         .sizes(&[Size::Fixed(3), Size::Min(0)])
         .render(t, &app.size, |t, chunks| {
             Tabs::default()
-                .block(Block::default().borders(border::ALL).title("Tabs"))
+                .block(Block::default().borders(Borders::ALL).title("Tabs"))
                 .titles(&app.tabs.titles)
                 .style(Style::default().fg(Color::Green))
                 .highlight_style(Style::default().fg(Color::Yellow))
@@ -334,9 +303,8 @@ fn draw_first_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
 }
 
 fn draw_gauges(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-
     Block::default()
-        .borders(border::ALL)
+        .borders(Borders::ALL)
         .title("Graphs")
         .render(t, area);
     Group::default()
@@ -382,7 +350,7 @@ fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
                         .sizes(&[Size::Percent(50), Size::Percent(50)])
                         .render(t, &chunks[0], |t, chunks| {
                             SelectableList::default()
-                                .block(Block::default().borders(border::ALL).title("List"))
+                                .block(Block::default().borders(Borders::ALL).title("List"))
                                 .items(&app.items)
                                 .select(app.selected)
                                 .highlight_style(
@@ -406,11 +374,11 @@ fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
                                 )
                             });
                             List::new(events)
-                                .block(Block::default().borders(border::ALL).title("List"))
+                                .block(Block::default().borders(Borders::ALL).title("List"))
                                 .render(t, &chunks[1]);
                         });
                     BarChart::default()
-                        .block(Block::default().borders(border::ALL).title("Bar chart"))
+                        .block(Block::default().borders(Borders::ALL).title("Bar chart"))
                         .data(&app.data4)
                         .bar_width(3)
                         .bar_gap(2)
@@ -430,7 +398,7 @@ fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
                         Block::default()
                             .title("Chart")
                             .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::Bold))
-                            .borders(border::ALL),
+                            .borders(Borders::ALL),
                     )
                     .x_axis(
                         Axis::default()
@@ -438,13 +406,11 @@ fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
                             .style(Style::default().fg(Color::Gray))
                             .labels_style(Style::default().modifier(Modifier::Italic))
                             .bounds(app.window)
-                            .labels(
-                                &[
-                                    &format!("{}", app.window[0]),
-                                    &format!("{}", (app.window[0] + app.window[1]) / 2.0),
-                                    &format!("{}", app.window[1]),
-                                ],
-                            ),
+                            .labels(&[
+                                &format!("{}", app.window[0]),
+                                &format!("{}", (app.window[0] + app.window[1]) / 2.0),
+                                &format!("{}", app.window[1]),
+                            ]),
                     )
                     .y_axis(
                         Axis::default()
@@ -454,20 +420,18 @@ fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
                             .bounds([-20.0, 20.0])
                             .labels(&["-20", "0", "20"]),
                     )
-                    .datasets(
-                        &[
-                            Dataset::default()
-                                .name("data2")
-                                .marker(Marker::Dot)
-                                .style(Style::default().fg(Color::Cyan))
-                                .data(&app.data2),
-                            Dataset::default()
-                                .name("data3")
-                                .marker(Marker::Braille)
-                                .style(Style::default().fg(Color::Yellow))
-                                .data(&app.data3),
-                        ],
-                    )
+                    .datasets(&[
+                        Dataset::default()
+                            .name("data2")
+                            .marker(Marker::Dot)
+                            .style(Style::default().fg(Color::Cyan))
+                            .data(&app.data2),
+                        Dataset::default()
+                            .name("data3")
+                            .marker(Marker::Braille)
+                            .style(Style::default().fg(Color::Yellow))
+                            .data(&app.data3),
+                    ])
                     .render(t, &chunks[1]);
             }
         });
@@ -475,20 +439,24 @@ fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
 
 fn draw_text(t: &mut Terminal<MouseBackend>, area: &Rect) {
     Paragraph::default()
-        .block(Block::default()
-               .borders(border::ALL)
-               .title("Footer")
-               .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::Bold)))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Footer")
+                .title_style(Style::default().fg(Color::Magenta).modifier(Modifier::Bold)),
+        )
         .wrap(true)
-        .text("This is a paragraph with several lines.\nYou can change the color.\nUse \
-              \\{fg=[color];bg=[color];mod=[modifier] [text]} to highlight the text with a color. \
-              For example, {fg=red u}{fg=green n}{fg=yellow d}{fg=magenta e}{fg=cyan r} \
-              {fg=gray t}{fg=light_gray h}{fg=light_red e} {fg=light_green r}{fg=light_yellow a} \
-              {fg=light_magenta i}{fg=light_cyan n}{fg=white b}{fg=red o}{fg=green w}.\n\
-              Oh, and if you didn't {mod=italic notice} you can {mod=bold automatically} \
-              {mod=invert wrap} your {mod=underline text} =).\nOne more thing is that \
-              it should display unicode characters properly: 日本国, ٩(-̮̮̃-̃)۶ ٩(●̮̮̃•̃)۶ ٩(͡๏̯͡๏)۶ \
-              ٩(-̮̮̃•̃).")
+        .text(
+            "This is a paragraph with several lines.\nYou can change the color.\nUse \
+             \\{fg=[color];bg=[color];mod=[modifier] [text]} to highlight the text with a color. \
+             For example, {fg=red u}{fg=green n}{fg=yellow d}{fg=magenta e}{fg=cyan r} \
+             {fg=gray t}{fg=light_gray h}{fg=light_red e} {fg=light_green r}{fg=light_yellow a} \
+             {fg=light_magenta i}{fg=light_cyan n}{fg=white b}{fg=red o}{fg=green w}.\n\
+             Oh, and if you didn't {mod=italic notice} you can {mod=bold automatically} \
+             {mod=invert wrap} your {mod=underline text} =).\nOne more thing is that \
+             it should display unicode characters properly: 日本国, ٩(-̮̮̃-̃)۶ ٩(●̮̮̃•̃)۶ ٩(͡๏̯͡๏)۶ \
+             ٩(-̮̮̃•̃).",
+        )
         .render(t, area);
 }
 
@@ -509,13 +477,13 @@ fn draw_second_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
                     };
                     Row::StyledData(vec![s.name, s.location, s.status].into_iter(), style)
                 }),
-            ).block(Block::default().title("Servers").borders(border::ALL))
+            ).block(Block::default().title("Servers").borders(Borders::ALL))
                 .header_style(Style::default().fg(Color::Yellow))
                 .widths(&[15, 15, 10])
                 .render(t, &chunks[0]);
 
             Canvas::default()
-                .block(Block::default().title("World").borders(border::ALL))
+                .block(Block::default().title("World").borders(Borders::ALL))
                 .paint(|ctx| {
                     ctx.draw(&Map {
                         color: Color::White,
