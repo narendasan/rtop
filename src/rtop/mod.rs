@@ -1,13 +1,11 @@
 use tui::layout::Rect;
 use tui::style::Color;
 
-
 pub mod datastreams;
-pub mod server;
 pub mod ui;
 
-use self::server::Server;
 use self::ui::tabs::Tabs;
+use self::datastreams::servers::Servers;
 
 pub struct App<'a> {
     pub size: Rect,
@@ -24,5 +22,5 @@ pub struct App<'a> {
     pub window: [f64; 2],
     pub colors: [Color; 2],
     pub color_index: usize,
-    pub servers: Vec<Server<'a>>,
+    pub servers: Servers<'a>,
 }
