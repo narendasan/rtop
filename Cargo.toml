@@ -2,6 +2,13 @@
 name = "rtop"
 version = "0.1.0"
 authors = ["Naren Dasan <naren@narendasan.com>"]
+description = "A system monitor implemented in Rust"
+homepage = "https://github.com/narendasan/rtop"
+readme = "README.md"
+keywords = ["system monitor", "system info"]
+catagories = [""]
+license = "NCSA"
+
 
 [dependencies]
 termion = "1.5.1"
@@ -9,5 +16,7 @@ log = "0.3.8"
 stderrlog = "0.2"
 rand = "0.4.1"
 tui = "0.2.0"
+sysinfo = "0.5.1"
+cute = "0.3.0"
 
 

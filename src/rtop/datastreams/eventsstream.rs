@@ -42,7 +42,7 @@ impl EventStream<'a> {
         }
     }
 
-    pub fn next(&mut self<'a>) -> (&'a str, &'a str) {
+    pub fn poll(&mut self<'a>) -> (&'a str, &'a str) {
         let event = self.events[self.itr];
         self.iter += 1;
         return event;

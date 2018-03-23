@@ -26,4 +26,4 @@ impl Iterator for SinSignal {
         self.x += self.interval;
         Some(point)
     }
-    }
+}

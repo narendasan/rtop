@@ -5,7 +5,6 @@ pub struct Server<'a> {
     pub status: &'a str,
 }
 
-
 pub struct Servers<'a> {
     pub nodes: Vec<Server<'a>>,
 }
