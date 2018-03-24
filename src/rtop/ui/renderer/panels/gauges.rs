@@ -1,6 +1,4 @@
-use rtop::App;
-
-
+use rtop::app::App;
 use tui::Terminal;
 use tui::backend::MouseBackend;
 use tui::widgets::{Block, Borders, Gauge, Sparkline, Widget};

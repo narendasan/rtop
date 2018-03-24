@@ -1,6 +1,6 @@
 
 use std::io;
-use rtop::App;
+use rtop::app::App;
 use rtop::ui::renderer::panels;
 
 use tui::Terminal;

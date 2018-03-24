@@ -1,4 +1,4 @@
-use rtop::App;
+use rtop::app::App;
 use rtop::ui::renderer::panels::cpuusage::render_cpu_usage;
 
 use tui::Terminal;

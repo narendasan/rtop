@@ -5,25 +5,22 @@ use std::collections::HashMap;
 use self::sysinfo::{Pid, Disk, Processor, Process, System, ProcessExt,
                     SystemExt, DiskExt, ProcessorExt, AsU32};
 
-pub struct SystemMonitor<'a> {
-    pub process_info: Vec<(u32, &'a str, f32, u64)>, //PID, Command, CPU. mem (kb)
-    pub cpu_info: Vec<(&'a str, f32)>, //Name, Usage
-    pub cpu_usage_history: HashMap<&'a str, Vec<f32>>, //Name, Usage
-    pub disk_info: Vec<(&'a str, &'a str, u64, u64)>, //Name, type, available, total
+pub struct SystemMonitor {
+    pub process_info: Vec<(u32, String, f32, u64)>, //PID, Command, CPU. mem (kb)
+    pub cpu_info: Vec<(String, f32)>, //Name, Usage
+    pub cpu_usage_history: HashMap<String, Vec<f32>>, //Name, Usage
+    pub disk_info: Vec<(String, String, u64, u64)>, //Name, type, available, total
     pub memory_usage: u64,
     pub memory_usage_history: Vec<f64>, //Name, Usage
     pub total_memory: u64,
     pub swap_usage: u64,
     pub total_swap: u64,
     system_info: System,
-    processes: Option<&'a HashMap<Pid, Process>>,
-    disk_list: Option<&'a[Disk]>, //&'a Vec<&'a DiskInfo<'a>>,
-    cpu_list: Option<&'a[Processor]>, //&'a Vec<&'a CPUCore<'a>>,
     max_history_len: usize,
     //networkUsage:
 }
 
-impl <'a> SystemMonitor<'a> {
+impl SystemMonitor {
     pub fn new(max_hist_len: usize) -> Self {        
         Self {
             process_info: Vec::new(),
@@ -36,49 +33,41 @@ impl <'a> SystemMonitor<'a> {
             swap_usage: 0,
             total_swap: 0,
             system_info: System::new(),
-            processes: None,
-            disk_list: None, 
-            cpu_list: None,
             max_history_len: max_hist_len,
         }
     }
 
-    pub fn poll(&'a mut self) {
+    pub fn poll(&mut self) {
         self.system_info.refresh_all();
-        self.processes = Some(self.system_info.get_process_list());
-        self.disk_list = Some(self.system_info.get_disks());
-        self.cpu_list = Some(self.system_info.get_processor_list());
+
+        let processes = self.system_info.get_process_list();
+        let disks = self.system_info.get_disks();
+        let cpus = self.system_info.get_processor_list();
 
         self.disk_info.clear();
-        match self.disk_list {
-            Some(disks) => for disk in disks {
-                self.disk_info.push(SystemMonitor::parse_disk_info(disk));
-            },
-            None => {},
+        for disk in disks {
+            self.disk_info.push(SystemMonitor::parse_disk_info(disk));
         }
 
         self.cpu_info.clear();
-        match self.cpu_list {
-            Some(cpus) => { 
-                    for cpu in cpus {
-                        let info = SystemMonitor::parse_cpu_info(cpu);
-                        self.cpu_info.push(info);
-                        let history = self.cpu_usage_history.entry(info.0).or_insert(Vec::new());
-                        while history.len() >= self.max_history_len {
-                            history.remove(0);
-                        }
-                        history.push(info.1);
+        for cpu in cpus {
+            let info = SystemMonitor::parse_cpu_info(cpu);
+            self.cpu_info.push(info);
+            match self.cpu_info.last() {
+                Some(entry) => {
+                    let history = self.cpu_usage_history.entry(entry.0.clone()).or_insert(Vec::new());
+                    while history.len() >= self.max_history_len {
+                        history.remove(0);
                     }
-            },
-            None => {},
+                    history.push(entry.1);
+                },
+                None => {},
+            };
         }
 
         self.process_info.clear();
-        match self.processes {
-            Some(processes) => for (pid, process) in processes {
-                self.process_info.push(SystemMonitor::parse_process_info(pid, process));
-            },
-            None => {},
+        for (pid, process) in processes {
+            self.process_info.push(SystemMonitor::parse_process_info(pid, process));
         }
 
         while self.memory_usage_history.len() >= self.max_history_len {
@@ -92,17 +81,17 @@ impl <'a> SystemMonitor<'a> {
         self.total_swap = self.system_info.get_total_swap();
     }
 
-    fn parse_disk_info(disk: &'a Disk) -> (&'a str, &'a str, u64, u64) {
+    fn parse_disk_info(disk: &Disk) -> (String, String, u64, u64) {
         let name = disk.get_name().to_str().expect("Optional Disk name returned None"); 
         let fs = str::from_utf8(disk.get_file_system()).unwrap();
-        (name, fs, disk.get_available_space(), disk.get_total_space())
+        (String::from(name), String::from(fs), disk.get_available_space(), disk.get_total_space())
     }
 
-    fn parse_cpu_info(cpu: &'a Processor) -> (&'a str, f32) {
-        (cpu.get_name(), cpu.get_cpu_usage())
+    fn parse_cpu_info(cpu: &Processor) -> (String, f32) {
+        (String::from(cpu.get_name()), cpu.get_cpu_usage())
     }
 
-    fn parse_process_info(pid: &'a Pid, process: &'a Process) -> (u32, &'a str, f32, u64) {
-        (pid.as_u32(), process.name(), process.cpu_usage(), process.memory())
+    fn parse_process_info(pid: &Pid, process: &Process) -> (u32, String, f32, u64) {
+        (pid.as_u32(), String::from(process.name()), process.cpu_usage(), process.memory())
     }
 }

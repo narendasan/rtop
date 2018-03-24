@@ -21,8 +21,8 @@ use tui::Terminal;
 use tui::backend::MouseBackend;
 use tui::style::Color;
 
-use rtop::App;
-use rtop::Cmd;
+use rtop::app::App;
+use rtop::cmd::Cmd;
 use rtop::ui::event::Event;
 use rtop::ui::tabs::Tabs as rTabs;
 use rtop::ui::renderer::render::render;
@@ -45,8 +45,6 @@ fn main() {
     let mut rand_signal = RandomSignal::new(0, 100);
 
     //Program
-    let mut sys_info = SystemMonitor::new(100 as usize);
-
     let mut app = App {
         items: vec![
             "Item1", "Item2", "Item3", "Item4", 
@@ -76,6 +74,7 @@ fn main() {
         color_index: 0,
         servers: Servers::new(),
         cpu_panel_memory: HashMap::new(),
+        sys_info: SystemMonitor::new(100 as usize),
     };
     let (tx, rx) = mpsc::channel();
     let input_tx = tx.clone();
@@ -110,7 +109,6 @@ fn main() {
     terminal.hide_cursor().unwrap();
 
     loop {
-        //sys_info.poll();
         let size = terminal.size().unwrap();
         if size != term_size {
             terminal.resize(size).unwrap();
@@ -133,7 +131,7 @@ fn main() {
                 },
 
                 Event::Tick => {
-                    app.update(&mut rand_signal, &sys_info);
+                    app.update(&mut rand_signal);
                 } 
             }
         }
