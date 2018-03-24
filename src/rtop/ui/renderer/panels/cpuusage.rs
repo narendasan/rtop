@@ -38,7 +38,13 @@ pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
                 .bounds([0.0, 100.0])
                 .labels(&["0", "20", "40", "60", "80", "100"]),
         )
-        .datasets(&datasets)
+        .datasets(&app.cpu_panel_memory.iter().enumerate().map(|x| {
+                Dataset::default()
+                    .name((x.1).0)
+                    .marker(Marker::Dot)
+                    .style(Style::default().fg(color_map(x.0)))
+                    .data((x.1).1)
+            }).collect::<Vec<Dataset>>())
         .render(t, area);
 }
 

@@ -15,7 +15,7 @@ pub fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .direction(Direction::Horizontal)
         .sizes(&sizes)
         .render(t, area, |t, chunks| {
-                render_sidebar(t, app, &chunks[0]);
+                //render_sidebar(t, app, &chunks[0]);
                 render_cpu_usage(t, app, &chunks[1]);
         });
 }
