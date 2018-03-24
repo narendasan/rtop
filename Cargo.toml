@@ -1,6 +1,6 @@
 [package]
 name = "rtop"
-version = "0.1.0"
+version = "0.0.0"
 authors = ["Naren Dasan <naren@narendasan.com>"]
 description = "A system monitor implemented in Rust"
 homepage = "https://github.com/narendasan/rtop"
