@@ -34,12 +34,28 @@ pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
                 .bounds([0.0, 100.0])
                 .labels(&["0", "20", "40", "60", "80", "100"]),
         )
-        .datasets(&app.cpu_panel_memory.iter().map(|x| {
+        .datasets(&app.cpu_panel_memory.iter().enumerate().map(|x| {
                 Dataset::default()
-                    .name(x.0)
+                    .name((x.1).0)
                     .marker(Marker::Dot)
-                    .style(Style::default().fg(Color::Cyan))
-                    .data(x.1)
-            }).collect::<Vec<Dataset>>())
+                    .style(Style::default().fg(color_map(x.0)))
+                    .data((x.1).1)
+            }).collect::<Vec<Dataset>>().as_slice())
         .render(t, area);
+}
+
+fn color_map(key: usize) -> Color {
+    match key % 10 {
+        0 => {Color::Red},
+        1 => {Color::Green},
+        2 => {Color::Yellow},
+        3 => {Color::Magenta},
+        4 => {Color::Cyan},
+        5 => {Color::LightRed},
+        6 => {Color::LightGreen},
+        7 => {Color::LightYellow},
+        8 => {Color::LightMagenta},
+        9 => {Color::LightCyan},
+        _ => {Color::White},
+    }
 }

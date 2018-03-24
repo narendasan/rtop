@@ -27,6 +27,39 @@ pub struct App<'a> {
 }
 
 impl <'a> App<'a> {
+    pub fn new(rand_signal: &RandomSignal) -> Self {
+        Self {
+            items: vec![
+            "Item1", "Item2", "Item3", "Item4", 
+            ],
+            events: vec![("Event1", "INFO"),],
+            selected: 0,
+            tabs: Tabs {
+                titles: vec!["Tab0", "Tab1"],
+                selection: 0,
+            },
+            show_chart: true,
+            progress: 0,
+            data: rand_signal.clone().take(300).collect(),
+            data4: vec![
+                ("B1", 9),
+                ("B2", 12),
+                ("B3", 5),
+                ("B4", 8),
+                ("B5", 2),
+                ("B6", 4),
+                ("B7", 5),
+                ("B8", 9),
+                ("B9", 14),
+            ],
+            window: [0.0, 20.0],
+            colors: [Color::Magenta, Color::Red],
+            color_index: 0,
+            servers: Servers::new(),
+            cpu_panel_memory: HashMap::new(),
+            sys_info: SystemMonitor::new(100 as usize),
+        }
+    }
     pub fn input_handler(&mut self, input: Key) -> Option<Cmd>{
         match input {
             Key::Char('q') => {
@@ -76,10 +109,11 @@ impl <'a> App<'a> {
             for (name, usage) in &self.sys_info.cpu_usage_history {
                 let pairwise_data = usage.iter()
                                         .enumerate()
-                                        .map(|x| (x.0 as f64, x.1.clone() as f64))
+                                        .map(|x| (x.0 as f64, x.1.clone() as f64 * 100.0))
                                         .collect::<Vec<(f64, f64)>>();
-
-                self.cpu_panel_memory.insert(name.clone(), pairwise_data);
+                let mut core_name = name.clone();
+                core_name.insert_str(0, "Core: ");
+                self.cpu_panel_memory.insert(core_name, pairwise_data);
             }
         }
         self.sys_info.poll();

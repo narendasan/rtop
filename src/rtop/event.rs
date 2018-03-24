@@ -1,4 +1,3 @@
-
 use termion::event;
 
 pub enum Event {
