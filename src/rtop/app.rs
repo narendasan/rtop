@@ -5,6 +5,7 @@ use termion::event::Key;
 
 use rtop::cmd::Cmd;
 use rtop::ui::tabs::Tabs;
+use rtop::datastreams::datastream::DataStream;
 use rtop::datastreams::servers::Servers;
 use rtop::datastreams::systemmonitor::SystemMonitor;
 use rtop::datastreams::randomsignal::RandomSignal;
@@ -27,7 +28,7 @@ pub struct App<'a> {
 }
 
 impl <'a> App<'a> {
-    pub fn new(rand_signal: &RandomSignal) -> Self {
+    pub fn new(history_len: usize, rand_signal: &RandomSignal) -> Self {
         Self {
             items: vec![
             "Item1", "Item2", "Item3", "Item4", 
@@ -40,7 +41,7 @@ impl <'a> App<'a> {
             },
             show_chart: true,
             progress: 0,
-            data: rand_signal.clone().take(300).collect(),
+            data: rand_signal.clone().take(history_len).collect(),
             data4: vec![
                 ("B1", 9),
                 ("B2", 12),
@@ -52,12 +53,12 @@ impl <'a> App<'a> {
                 ("B8", 9),
                 ("B9", 14),
             ],
-            window: [0.0, 20.0],
+            window: [0.0, history_len as f64],
             colors: [Color::Magenta, Color::Red],
             color_index: 0,
             servers: Servers::new(),
             cpu_panel_memory: HashMap::new(),
-            sys_info: SystemMonitor::new(100 as usize),
+            sys_info: DataStream::new(history_len),
         }
     }
     pub fn input_handler(&mut self, input: Key) -> Option<Cmd>{
@@ -96,8 +97,8 @@ impl <'a> App<'a> {
         self.data.pop();
         let i = self.data4.pop().unwrap();
         self.data4.insert(0, i);
-        self.window[0] += 1.0;
-        self.window[1] += 1.0;
+        //self.window[0] += 1.0;
+        //self.window[1] += 1.0;
         let i = self.events.pop().unwrap();
         self.events.insert(0, i);
         self.color_index += 1;

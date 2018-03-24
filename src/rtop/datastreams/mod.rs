@@ -1,3 +1,4 @@
+pub mod datastream;
 pub mod randomsignal;
 pub mod servers;
 pub mod systemmonitor;

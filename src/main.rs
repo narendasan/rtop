@@ -25,6 +25,11 @@ use rtop::event::Event;
 use rtop::ui::renderer::render::render;
 use rtop::datastreams::randomsignal::RandomSignal;
 
+use tui::widgets::Dataset;
+use tui::style::Color;
+use tui::style::Style;
+use tui::widgets::Marker;
+
 fn main() {
     stderrlog::new()
         .module(module_path!())
@@ -35,7 +40,7 @@ fn main() {
     info!("Start");
     let mut rand_signal = RandomSignal::new(0, 100);
     //Program
-    let mut app = App::new(&rand_signal);
+    let mut app = App::new(2000, &rand_signal);
     let (tx, rx) = mpsc::channel();
     let input_tx = tx.clone();
 
@@ -71,7 +76,13 @@ fn main() {
             term_size = size;
         }
         render(&mut terminal, &app, &term_size).unwrap();
-        //println!("{:?}", app.cpu_panel_memory);
+        /*println!("{:?}", app.cpu_panel_memory.iter().enumerate().map(|x| {(x.1).0
+                            //Dataset::default()
+                            //    .name((x.1).0)
+                            //   .marker(Marker::Dot)
+                            //  .style(Style::default().fg(Color::Red))
+                            //    .data((x.1).1)
+                        }).collect::<Vec<&String>>());*/
         let evt = rx.recv().unwrap();
         {
             match evt {

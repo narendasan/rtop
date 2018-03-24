@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use self::sysinfo::{Pid, Disk, Processor, Process, System, ProcessExt,
                     SystemExt, DiskExt, ProcessorExt, AsU32};
 
+use rtop::datastreams::datastream::DataStream;
+
 pub struct SystemMonitor {
     pub process_info: Vec<(u32, String, f32, u64)>, //PID, Command, CPU. mem (kb)
     pub cpu_info: Vec<(String, f32)>, //Name, Usage
@@ -20,8 +22,8 @@ pub struct SystemMonitor {
     //networkUsage:
 }
 
-impl SystemMonitor {
-    pub fn new(max_hist_len: usize) -> Self {        
+impl DataStream for SystemMonitor {
+    fn new(max_hist_len: usize) -> Self {        
         Self {
             process_info: Vec::new(),
             cpu_info: Vec::new(),
@@ -37,7 +39,7 @@ impl SystemMonitor {
         }
     }
 
-    pub fn poll(&mut self) {
+    fn poll(&mut self) {
         self.system_info.refresh_all();
 
         let processes = self.system_info.get_process_list();
@@ -55,7 +57,7 @@ impl SystemMonitor {
             self.cpu_info.push(info);
             match self.cpu_info.last() {
                 Some(entry) => {
-                    let history = self.cpu_usage_history.entry(entry.0.clone()).or_insert(Vec::new());
+                    let history = self.cpu_usage_history.entry(entry.0.clone()).or_insert(vec![0.0; self.max_history_len]);
                     while history.len() >= self.max_history_len {
                         history.remove(0);
                     }
@@ -80,7 +82,9 @@ impl SystemMonitor {
         self.swap_usage = self.system_info.get_used_swap();
         self.total_swap = self.system_info.get_total_swap();
     }
+}
 
+impl SystemMonitor {
     fn parse_disk_info(disk: &Disk) -> (String, String, u64, u64) {
         let name = disk.get_name().to_str().expect("Optional Disk name returned None"); 
         let fs = str::from_utf8(disk.get_file_system()).unwrap();
