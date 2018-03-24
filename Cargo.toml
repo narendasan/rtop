@@ -5,7 +5,7 @@ authors = ["Naren Dasan <naren@narendasan.com>"]
 description = "A system monitor implemented in Rust"
 homepage = "https://github.com/narendasan/rtop"
 readme = "README.md"
-keywords = ["system monitor", "system info"]
+keywords = ["system", "monitor", "info"]
 catagories = [""]
 license = "NCSA"
 
