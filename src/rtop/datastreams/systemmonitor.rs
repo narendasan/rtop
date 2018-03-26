@@ -9,7 +9,8 @@ use rtop::datastreams::datastream::DataStream;
 
 pub struct SystemMonitor {
     pub process_info: Vec<(u32, String, f32, u64)>, //PID, Command, CPU. mem (kb)
-    pub cpu_info: Vec<(String, f32)>, //Name, Usage
+    pub cpu_usage: f32,
+    pub cpu_core_info: Vec<(String, f32)>, //Name, Usage
     pub cpu_usage_history: HashMap<String, Vec<f32>>, //Name, Usage
     pub disk_info: Vec<(String, String, u64, u64)>, //Name, type, available, total
     pub memory_usage: u64,
@@ -26,7 +27,8 @@ impl DataStream for SystemMonitor {
     fn new(max_hist_len: usize) -> Self {        
         Self {
             process_info: Vec::new(),
-            cpu_info: Vec::new(),
+            cpu_usage: 0.0,
+            cpu_core_info: Vec::new(),
             cpu_usage_history: HashMap::new(),
             disk_info: Vec::new(),
             memory_usage: 0,
@@ -51,11 +53,11 @@ impl DataStream for SystemMonitor {
             self.disk_info.push(SystemMonitor::parse_disk_info(disk));
         }
 
-        self.cpu_info.clear();
+        self.cpu_core_info.clear();
         for cpu in &cpus[1..cpus.len()] {
             let info = SystemMonitor::parse_cpu_info(cpu);
-            self.cpu_info.push(info);
-            match self.cpu_info.last() {
+            self.cpu_core_info.push(info);
+            match self.cpu_core_info.last() {
                 Some(entry) => {
                     let history = self.cpu_usage_history.entry(entry.0.clone()).or_insert(vec![0.0; self.max_history_len]);
                     while history.len() >= self.max_history_len {
@@ -66,6 +68,7 @@ impl DataStream for SystemMonitor {
                 None => {},
             };
         }
+        self.cpu_usage = cpus[0].get_cpu_usage();
 
         self.process_info.clear();
         for (pid, process) in processes {

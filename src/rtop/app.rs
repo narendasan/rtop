@@ -23,7 +23,7 @@ pub struct App<'a> {
     pub colors: [Color; 2],
     pub color_index: usize,
     pub servers: Servers<'a>,
-    pub cpu_panel_memory: HashMap<String, Vec<(f64, f64)>>,
+    pub cpu_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     pub sys_info: SystemMonitor,
 }
 
@@ -113,8 +113,9 @@ impl <'a> App<'a> {
                                         .map(|x| (x.0 as f64, x.1.clone() as f64 * 100.0))
                                         .collect::<Vec<(f64, f64)>>();
                 let mut core_name = name.clone();
+                let core_num = core_name.parse::<u32>().unwrap();
                 core_name.insert_str(0, "Core: ");
-                self.cpu_panel_memory.insert(core_name, pairwise_data);
+                self.cpu_panel_memory.insert(core_num, (core_name, pairwise_data));
             }
         }
         self.sys_info.poll();

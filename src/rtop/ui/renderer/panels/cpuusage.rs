@@ -7,13 +7,10 @@ use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
 pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    let datasets = app.cpu_panel_memory.iter().enumerate().map(|x| {
-                Dataset::default()
-                    .name((x.1).0)
-                    .marker(Marker::Dot)
-                    .style(Style::default().fg(color_map(x.0)))
-                    .data((x.1).1)
-            }).collect::<Vec<Dataset>>();
+    let mut data = app.cpu_panel_memory.iter()
+                                    .map(|x| {(x.0.clone(), (x.1).0.clone(), (x.1).1.clone())})
+                                    .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
+    data.sort_by_key(|k| k.0);
     //println!("{:?}", app.cpu_panel_memory);        
     Chart::default()
         .block(
@@ -38,19 +35,19 @@ pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
                 .bounds([0.0, 100.0])
                 .labels(&["0", "20", "40", "60", "80", "100"]),
         )
-        .datasets(&app.cpu_panel_memory.iter().enumerate().map(|x| {
-                Dataset::default()
-                    .name((x.1).0)
-                    .marker(Marker::Dot)
-                    .style(Style::default().fg(color_map(x.0)))
-                    .data((x.1).1)
-            }).collect::<Vec<Dataset>>())
+        .datasets(&data.iter().map(|x| {
+                        Dataset::default()
+                            .name(&x.1)
+                            .marker(Marker::Dot)
+                            .style(Style::default().fg(color_map(x.0)))
+                            .data(&x.2)
+                    }).collect::<Vec<Dataset>>())
         .render(t, area);
 }
 
 
 
-fn color_map(key: usize) -> Color {
+fn color_map(key: u32) -> Color {
     match key % 10 {
         0 => {Color::Red},
         1 => {Color::Green},
