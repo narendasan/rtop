@@ -114,7 +114,8 @@ impl <'a> App<'a> {
                                         .collect::<Vec<(f64, f64)>>();
                 let mut core_name = name.clone();
                 let core_num = core_name.parse::<u32>().unwrap();
-                core_name.insert_str(0, "Core: ");
+                core_name = format!("Core: {} ({:.2}%)", core_name, 
+                                                      (self.sys_info.cpu_core_info[(core_num - 1) as usize].1 * 100.0).to_string());
                 self.cpu_panel_memory.insert(core_num, (core_name, pairwise_data));
             }
         }

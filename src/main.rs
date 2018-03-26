@@ -76,13 +76,6 @@ fn main() {
             term_size = size;
         }
         render(&mut terminal, &app, &term_size).unwrap();
-        /*println!("{:?}", app.cpu_panel_memory.iter().enumerate().map(|x| {(x.1).0
-                            //Dataset::default()
-                            //    .name((x.1).0)
-                            //   .marker(Marker::Dot)
-                            //  .style(Style::default().fg(Color::Red))
-                            //    .data((x.1).1)
-                        }).collect::<Vec<&String>>());*/
         let evt = rx.recv().unwrap();
         {
             match evt {

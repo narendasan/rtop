@@ -11,7 +11,7 @@ pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
                                     .map(|x| {(x.0.clone(), (x.1).0.clone(), (x.1).1.clone())})
                                     .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
     data.sort_by_key(|k| k.0);
-    //println!("{:?}", app.cpu_panel_memory);        
+
     Chart::default()
         .block(
             Block::default()
@@ -21,7 +21,7 @@ pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
         )
         .x_axis(
             Axis::default()
-                .title("X Axis")
+                .title("")
                 .style(Style::default().fg(Color::Gray))
                 .labels_style(Style::default().modifier(Modifier::Italic))
                 .bounds(app.window)
@@ -29,7 +29,7 @@ pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
         )
         .y_axis(
             Axis::default()
-                .title("Y Axis")
+                .title("Usage (%)")
                 .style(Style::default().fg(Color::Gray))
                 .labels_style(Style::default().modifier(Modifier::Italic))
                 .bounds([0.0, 100.0])
@@ -38,7 +38,7 @@ pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
         .datasets(&data.iter().map(|x| {
                         Dataset::default()
                             .name(&x.1)
-                            .marker(Marker::Dot)
+                            .marker(Marker::Braille)
                             .style(Style::default().fg(color_map(x.0)))
                             .data(&x.2)
                     }).collect::<Vec<Dataset>>())
@@ -62,19 +62,3 @@ fn color_map(key: u32) -> Color {
         _ => {Color::White},
     }
 }
-
-/*
-match app.cpu_panel_memory.get("Core: 0") {
-                Some(data) => {
-                    [Dataset::default()
-                        .name("Core: 0")
-                        .marker(Marker::Dot)
-                        .style(Style::default().fg(color_map(0)))
-                        .data(&data)]
-                },
-                None => {[Dataset::default()
-                        .name("Core: 0")
-                        .marker(Marker::Dot)
-                        .style(Style::default().fg(color_map(0)))
-                        .data(&[])]},
-        })*/
