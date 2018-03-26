@@ -45,14 +45,14 @@ impl DataStream for SystemMonitor {
         let processes = self.system_info.get_process_list();
         let disks = self.system_info.get_disks();
         let cpus = self.system_info.get_processor_list();
-
+        
         self.disk_info.clear();
         for disk in disks {
             self.disk_info.push(SystemMonitor::parse_disk_info(disk));
         }
 
         self.cpu_info.clear();
-        for cpu in cpus {
+        for cpu in &cpus[1..cpus.len()] {
             let info = SystemMonitor::parse_cpu_info(cpu);
             self.cpu_info.push(info);
             match self.cpu_info.last() {
@@ -92,6 +92,7 @@ impl SystemMonitor {
     }
 
     fn parse_cpu_info(cpu: &Processor) -> (String, f32) {
+        //println!("{:?}", (String::from(cpu.get_name()), cpu.get_cpu_usage()));
         (String::from(cpu.get_name()), cpu.get_cpu_usage())
     }
 

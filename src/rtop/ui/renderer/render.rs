@@ -15,7 +15,7 @@ pub fn render(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) -> Result<
         .direction(Direction::Vertical)
         .sizes(&[Size::Fixed(3), Size::Min(0)])
         .render(t, area, |t, chunks| {
-            //render_tab_bar(t, app, &chunks[0]);
+            render_tab_bar(t, app, &chunks[0]);
             match app.tabs.selection {
                 0 => {
                     draw_first_tab(t, app, &chunks[1]);
@@ -43,11 +43,11 @@ fn render_tab_bar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
 fn draw_first_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     Group::default()
         .direction(Direction::Vertical)
-        .sizes(&[Size::Percent(34), Size::Percent(33), Size::Percent(33)])
+        .sizes(&[Size::Percent(50), Size::Percent(25), Size::Percent(25)])
         .render(t, area, |t, chunks| {
             panels::charts::draw_charts(t, app, &chunks[0]);
-            //panels::gauges::draw_gauges(t, app, &chunks[1]);
-            //panels::text::render_text(t, &chunks[2]);
+            panels::gauges::draw_gauges(t, app, &chunks[1]);
+            panels::text::render_text(t, &chunks[2]);
         });
 }
 

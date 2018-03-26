@@ -10,12 +10,12 @@ use tui::style::{Color, Modifier, Style};
 
 
 pub fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    let sizes = vec![Size::Percent(50), Size::Percent(50)];
+    let sizes = vec![Size::Percent(20), Size::Percent(80)];
     Group::default()
         .direction(Direction::Horizontal)
         .sizes(&sizes)
         .render(t, area, |t, chunks| {
-                //render_sidebar(t, app, &chunks[0]);
+                render_sidebar(t, app, &chunks[0]);
                 render_cpu_usage(t, app, &chunks[1]);
         });
 }
