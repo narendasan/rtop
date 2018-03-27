@@ -3,3 +3,4 @@ pub mod gauges;
 pub mod charts;
 mod cpuusage;
 mod processes;
+mod memoryswapusage;

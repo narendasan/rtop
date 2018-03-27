@@ -17,6 +17,5 @@ stderrlog = "0.2"
 rand = "0.4.1"
 tui = "0.2.0"
 sysinfo = "0.5.1"
-cute = "0.3.0"
 
 

@@ -17,6 +17,7 @@ pub struct SystemMonitor {
     pub memory_usage_history: Vec<f64>, //Name, Usage
     pub total_memory: u64,
     pub swap_usage: u64,
+    pub swap_usage_history: Vec<f64>,
     pub total_swap: u64,
     system_info: System,
     max_history_len: usize,
@@ -32,10 +33,11 @@ impl DataStream for SystemMonitor {
             cpu_usage_history: HashMap::new(),
             disk_info: Vec::new(),
             memory_usage: 0,
-            memory_usage_history: Vec::new(),
             total_memory: 0,
+            memory_usage_history: vec![0.0; max_hist_len],
             swap_usage: 0,
             total_swap: 0,
+            swap_usage_history: vec![0.0; max_hist_len],
             system_info: System::new(),
             max_history_len: max_hist_len,
         }
@@ -76,16 +78,20 @@ impl DataStream for SystemMonitor {
         }
 
         //println!("{:?}", self.process_info);
-
-        while self.memory_usage_history.len() >= self.max_history_len {
-            self.memory_usage_history.remove(0);
-        }
-        self.memory_usage_history.push(self.system_info.get_used_memory() as f64 / self.system_info.get_total_memory() as f64);
-
         self.memory_usage = self.system_info.get_used_memory();
         self.total_memory = self.system_info.get_total_memory();
         self.swap_usage = self.system_info.get_used_swap();
         self.total_swap = self.system_info.get_total_swap();
+
+        while self.memory_usage_history.len() >= self.max_history_len {
+            self.memory_usage_history.remove(0);
+        }
+        self.memory_usage_history.push(self.memory_usage as f64 / self.total_memory as f64);
+
+        while self.swap_usage_history.len() >= self.max_history_len {
+            self.swap_usage_history.remove(0);
+        }
+        self.swap_usage_history.push(self.swap_usage as f64 / self.total_swap as f64);
     }
 }
 

@@ -1,6 +1,7 @@
 use rtop::app::App;
 use rtop::ui::renderer::panels::cpuusage::render_cpu_usage;
 use rtop::ui::renderer::panels::processes::render_processes;
+use rtop::ui::renderer::panels::memoryswapusage::render_mem_and_swap_usage;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
@@ -27,7 +28,7 @@ fn render_sidebar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
             render_processes(t, app, &chunks[0]);
-            render_bar_graph(t, app, &chunks[1]);
+            render_mem_and_swap_usage(t, app, &chunks[1]);
         });
 }
 
@@ -46,35 +47,4 @@ fn render_bar_graph(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .label_style(Style::default().fg(Color::Yellow))
         .style(Style::default().fg(Color::Green))
         .render(t, area);
-}
-
-fn render_lists(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    Group::default()
-        .direction(Direction::Horizontal)
-        .sizes(&[Size::Percent(50), Size::Percent(50)])
-        .render(t, area, |t, chunks| {
-            //render_selctable_list(t, app, &chunks[0]);
-            render_streams(t, app, &chunks[1]);
-        });
-}
-
-fn render_streams(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    let info_style = Style::default().fg(Color::White);
-            let warning_style = Style::default().fg(Color::Yellow);
-            let error_style = Style::default().fg(Color::Magenta);
-            let critical_style = Style::default().fg(Color::Red);
-            let events = app.events.iter().map(|&(evt, level)| {
-                Item::StyledData(
-                    format!("{}: {}", level, evt),
-                    match level {
-                        "ERROR" => &error_style,
-                        "CRITICAL" => &critical_style,
-                        "WARNING" => &warning_style,
-                        _ => &info_style,
-                    },
-                )
-            });
-            List::new(events)
-                .block(Block::default().borders(Borders::ALL).title("List"))
-                .render(t, area);
 }

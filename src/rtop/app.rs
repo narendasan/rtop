@@ -24,6 +24,10 @@ pub struct App<'a> {
     pub color_index: usize,
     pub servers: Servers<'a>,
     pub cpu_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
+    pub mem_panel_memory: Vec<(f64, f64)>,
+    pub mem_usage_str: String,
+    pub swap_panel_memory: Vec<(f64, f64)>,
+    pub swap_usage_str: String,
     pub sys_info: SystemMonitor,
 }
 
@@ -58,6 +62,10 @@ impl <'a> App<'a> {
             color_index: 0,
             servers: Servers::new(),
             cpu_panel_memory: HashMap::new(),
+            mem_panel_memory: Vec::new(),
+            mem_usage_str: String::new(),
+            swap_panel_memory: Vec::new(),
+            swap_usage_str: String::new(),
             sys_info: DataStream::new(history_len),
         }
     }
@@ -110,7 +118,7 @@ impl <'a> App<'a> {
             for (name, usage) in &self.sys_info.cpu_usage_history {
                 let pairwise_data = usage.iter()
                                         .enumerate()
-                                        .map(|x| (x.0 as f64, x.1.clone() as f64 * 100.0))
+                                        .map(|x| (x.0 as f64, x.1.clone() as f64))
                                         .collect::<Vec<(f64, f64)>>();
                 let mut core_name = name.clone();
                 let core_num = core_name.parse::<u32>().unwrap();
@@ -118,6 +126,20 @@ impl <'a> App<'a> {
                                                       (self.sys_info.cpu_core_info[(core_num - 1) as usize].1 * 100.0).to_string());
                 self.cpu_panel_memory.insert(core_num, (core_name, pairwise_data));
             }
+        }
+        //Memory History Parsing
+        {
+            for (i, usage) in self.sys_info.memory_usage_history.iter().enumerate() {                            
+                self.mem_panel_memory.push((i as f64, usage.clone()));
+            }
+            self.mem_usage_str = format!("Memory ({:.2}%)", 100.0 * self.sys_info.memory_usage as f64 / self.sys_info.total_memory as f64);
+        }
+        //Swap History Parsing
+        {
+            for (i, usage) in self.sys_info.swap_usage_history.iter().enumerate() {                            
+                self.swap_panel_memory.push((i as f64, usage.clone()));
+            }
+            self.swap_usage_str = format!("Swap ({:.2}%)", 100.0 * self.sys_info.swap_usage as f64 / self.sys_info.total_swap as f64);
         }
         self.sys_info.poll();
     }

@@ -40,7 +40,7 @@ fn main() {
     info!("Start");
     let mut rand_signal = RandomSignal::new(0, 100);
     //Program
-    let mut app = App::new(20000, &rand_signal);
+    let mut app = App::new(200, &rand_signal);
     let (tx, rx) = mpsc::channel();
     let input_tx = tx.clone();
 
@@ -59,7 +59,7 @@ fn main() {
         let tx = tx.clone();
         loop {
             tx.send(Event::Tick).unwrap();
-            thread::sleep(time::Duration::from_millis(500));
+            thread::sleep(time::Duration::from_millis(50));
         }
     });
 

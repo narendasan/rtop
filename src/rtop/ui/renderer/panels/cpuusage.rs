@@ -32,7 +32,7 @@ pub fn render_cpu_usage(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
                 .title("Usage (%)")
                 .style(Style::default().fg(Color::Gray))
                 .labels_style(Style::default().modifier(Modifier::Italic))
-                .bounds([0.0, 100.0])
+                .bounds([0.0, 1.0])
                 .labels(&["0", "20", "40", "60", "80", "100"]),
         )
         .datasets(&data.iter().map(|x| {
