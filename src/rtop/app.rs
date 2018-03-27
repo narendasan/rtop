@@ -17,7 +17,6 @@ pub struct App<'a> {
     pub tabs: Tabs<'a>,
     pub show_chart: bool,
     pub progress: u16,
-    pub data: Vec<u64>,
     pub data4: Vec<(&'a str, u64)>,
     pub window: [f64; 2],
     pub colors: [Color; 2],
@@ -28,11 +27,13 @@ pub struct App<'a> {
     pub mem_usage_str: String,
     pub swap_panel_memory: Vec<(f64, f64)>,
     pub swap_usage_str: String,
+    pub net_in_str: String,
+    pub net_out_str: String,
     pub sys_info: SystemMonitor,
 }
 
 impl <'a> App<'a> {
-    pub fn new(history_len: usize, rand_signal: &RandomSignal) -> Self {
+    pub fn new(history_len: usize) -> Self {
         Self {
             items: vec![
             "Item1", "Item2", "Item3", "Item4", 
@@ -45,7 +46,6 @@ impl <'a> App<'a> {
             },
             show_chart: true,
             progress: 0,
-            data: rand_signal.clone().take(history_len).collect(),
             data4: vec![
                 ("B1", 9),
                 ("B2", 12),
@@ -66,6 +66,8 @@ impl <'a> App<'a> {
             mem_usage_str: String::new(),
             swap_panel_memory: Vec::new(),
             swap_usage_str: String::new(),
+            net_in_str: String::new(),
+            net_out_str: String::new(),
             sys_info: DataStream::new(history_len),
         }
     }
@@ -96,17 +98,13 @@ impl <'a> App<'a> {
         return None;
     }
 
-    pub fn update(&mut self, rand_signal:  &mut RandomSignal) {
+    pub fn update(&mut self) {
         self.progress += 5;
         if self.progress > 100 {
             self.progress = 0;
         }
-        self.data.insert(0, rand_signal.next().unwrap());
-        self.data.pop();
         let i = self.data4.pop().unwrap();
         self.data4.insert(0, i);
-        //self.window[0] += 1.0;
-        //self.window[1] += 1.0;
         let i = self.events.pop().unwrap();
         self.events.insert(0, i);
         self.color_index += 1;
@@ -129,18 +127,47 @@ impl <'a> App<'a> {
         }
         //Memory History Parsing
         {
-            for (i, usage) in self.sys_info.memory_usage_history.iter().enumerate() {                            
-                self.mem_panel_memory.push((i as f64, usage.clone()));
-            }
+            self.mem_panel_memory =  self.sys_info.memory_usage_history.iter()
+                                                                        .enumerate()
+                                                                        .map(|(i, u)| (i as f64, u.clone()))
+                                                                        .collect::<Vec<(f64, f64)>>();                         
             self.mem_usage_str = format!("Memory ({:.2}%)", 100.0 * self.sys_info.memory_usage as f64 / self.sys_info.total_memory as f64);
         }
         //Swap History Parsing
         {
-            for (i, usage) in self.sys_info.swap_usage_history.iter().enumerate() {                            
-                self.swap_panel_memory.push((i as f64, usage.clone()));
-            }
+            self.swap_panel_memory =  self.sys_info.swap_usage_history.iter()
+                                                                      .enumerate()
+                                                                      .map(|(i, u)| (i as f64, u.clone()))
+                                                                      .collect::<Vec<(f64, f64)>>(); 
             self.swap_usage_str = format!("Swap ({:.2}%)", 100.0 * self.sys_info.swap_usage as f64 / self.sys_info.total_swap as f64);
         }
+        //Network Parsing
+        {
+            
+            let (scalar, unit) = App::si_prefix(self.sys_info.net_in); 
+            self.net_in_str = format!("Current Incoming Traffic: {} {}/s", self.sys_info.net_in / scalar, unit);
+
+
+            let (scalar, unit) = App::si_prefix(self.sys_info.net_out); 
+            self.net_out_str = format!("Current Outgoing Network Traffic: {} {}/s", self.sys_info.net_out / scalar, unit);    
+        }
+
         self.sys_info.poll();
+    }
+
+    fn si_prefix(bytes: u64) -> (u64, String) {
+        let b = bytes as f64;
+        if b == 0.0 {
+            return (1 as u64, String::from("B"));
+        }
+        match b.log(10.0) as u64 {
+            0 | 1 | 2 => ((10 as u64).pow(0), String::from("B")),
+            3 | 4 | 5 => ((10 as u64).pow(3), String::from("KB")),
+            6 | 7 | 8 => ((10 as u64).pow(6), String::from("MB")),
+            9 | 10 | 11 => ((10 as u64).pow(9), String::from("GB")),
+            12 | 13 | 14 => ((10 as u64).pow(12), String::from("TB")),
+            15 | 16 | 17 => ((10 as u64).pow(15), String::from("PB")),
+            _ => ((10 as u64).pow(18), String::from("EB")),
+        }
     }
 }

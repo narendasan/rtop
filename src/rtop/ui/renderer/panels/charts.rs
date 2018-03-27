@@ -1,7 +1,7 @@
 use rtop::app::App;
 use rtop::ui::renderer::panels::cpuusage::render_cpu_usage;
 use rtop::ui::renderer::panels::processes::render_processes;
-use rtop::ui::renderer::panels::memoryswapusage::render_mem_and_swap_usage;
+use rtop::ui::renderer::panels::memoryswapusage::render_mem_and_swap_history;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
@@ -28,7 +28,7 @@ fn render_sidebar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
             render_processes(t, app, &chunks[0]);
-            render_mem_and_swap_usage(t, app, &chunks[1]);
+            render_mem_and_swap_history(t, app, &chunks[1]);
         });
 }
 

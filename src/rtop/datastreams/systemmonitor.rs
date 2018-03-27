@@ -3,7 +3,7 @@ extern crate sysinfo;
 use std::str;
 use std::collections::HashMap;
 use self::sysinfo::{Pid, Disk, Processor, Process, System, ProcessExt,
-                    SystemExt, DiskExt, ProcessorExt, AsU32};
+                    SystemExt, DiskExt, ProcessorExt, NetworkData, NetworkExt, AsU32};
 
 use rtop::datastreams::datastream::DataStream;
 
@@ -19,9 +19,13 @@ pub struct SystemMonitor {
     pub swap_usage: u64,
     pub swap_usage_history: Vec<f64>,
     pub total_swap: u64,
+    pub net_in_history: Vec<u64>,
+    pub net_out_history: Vec<u64>, 
+    pub net_in: u64,
+    pub net_out: u64, 
     system_info: System,
+    max_sparkline_len: usize,
     max_history_len: usize,
-    //networkUsage:
 }
 
 impl DataStream for SystemMonitor {
@@ -38,7 +42,12 @@ impl DataStream for SystemMonitor {
             swap_usage: 0,
             total_swap: 0,
             swap_usage_history: vec![0.0; max_hist_len],
+            net_in_history: Vec::new(),
+            net_out_history: Vec::new(), 
+            net_in: 0,
+            net_out: 0, 
             system_info: System::new(),
+            max_sparkline_len: 50,
             max_history_len: max_hist_len,
         }
     }
@@ -92,6 +101,22 @@ impl DataStream for SystemMonitor {
             self.swap_usage_history.remove(0);
         }
         self.swap_usage_history.push(self.swap_usage as f64 / self.total_swap as f64);
+
+        let net = self.system_info.get_network();
+        self.net_in = net.get_income();
+        self.net_out = net.get_outcome();
+
+        let (inc, out) = SystemMonitor::parse_networking_info((self.net_in, self.net_out));
+
+        while self.net_in_history.len() >= self.max_sparkline_len {
+            self.net_in_history.remove(0);
+        }
+        self.net_in_history.push(inc);
+
+        while self.net_out_history.len() >= self.max_sparkline_len {
+            self.net_out_history.remove(0);
+        }
+        self.net_out_history.push(out);
     }
 }
 
@@ -107,6 +132,17 @@ impl SystemMonitor {
     }
 
     fn parse_process_info(pid: &Pid, process: &Process) -> (u32, String, f32, u64) {
-        (pid.as_u32(), String::from(process.name()), process.cpu_usage(), process.memory())
+        (pid.as_u32(), String::from(process.name()), process.cpu_usage() * 100.0, process.memory())
+    }
+
+    fn parse_networking_info(net: (u64, u64)) -> (u64, u64) {
+        let (mut inc, mut out) = net;
+        if inc == 0 {
+            inc = 10;
+        }
+        if out == 0 {
+            out = 10;
+        }
+        (inc, out)
     }
 }

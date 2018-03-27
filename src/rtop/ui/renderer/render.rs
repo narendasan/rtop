@@ -46,7 +46,7 @@ fn draw_first_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .sizes(&[Size::Percent(50), Size::Percent(25), Size::Percent(25)])
         .render(t, area, |t, chunks| {
             panels::charts::draw_charts(t, app, &chunks[0]);
-            panels::gauges::draw_gauges(t, app, &chunks[1]);
+            panels::network::render_network_info(t, app, &chunks[1]);
             panels::text::render_text(t, &chunks[2]);
         });
 }

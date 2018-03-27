@@ -22,6 +22,7 @@ pub fn render_processes(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
             } else {
                 &default_style
             };
+            //println!("{}", s.2);
             Row::StyledData(vec![s.0.to_string(), s.1.to_string(), s.2.to_string(), s.3.to_string()].into_iter(), style)
         }),
     ).block(Block::default().title("Processes").borders(Borders::ALL))
