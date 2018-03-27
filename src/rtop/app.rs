@@ -13,7 +13,7 @@ use rtop::datastreams::randomsignal::RandomSignal;
 pub struct App<'a> {
     pub items: Vec<&'a str>,
     pub events: Vec<(&'a str, &'a str)>,
-    pub selected: usize,
+    pub selected_proc: usize,
     pub tabs: Tabs<'a>,
     pub show_chart: bool,
     pub progress: u16,
@@ -34,7 +34,7 @@ impl <'a> App<'a> {
             "Item1", "Item2", "Item3", "Item4", 
             ],
             events: vec![("Event1", "INFO"),],
-            selected: 0,
+            selected_proc: 0,
             tabs: Tabs {
                 titles: vec!["Tab0", "Tab1"],
                 selection: 0,
@@ -67,12 +67,12 @@ impl <'a> App<'a> {
                 return Some(Cmd::Quit);
             }
             Key::Up => {
-                if self.selected > 0 {
-                    self.selected -= 1
+                if self.selected_proc > 0 {
+                    self.selected_proc -= 1
                 };
             }
-            Key::Down => if self.selected < self.items.len() - 1 {
-                self.selected += 1;
+            Key::Down => if self.selected_proc < self.sys_info.process_info.len() - 1 {
+                self.selected_proc += 1;
             },
             Key::Left => {
                 self.tabs.previous();

@@ -75,6 +75,8 @@ impl DataStream for SystemMonitor {
             self.process_info.push(SystemMonitor::parse_process_info(pid, process));
         }
 
+        //println!("{:?}", self.process_info);
+
         while self.memory_usage_history.len() >= self.max_history_len {
             self.memory_usage_history.remove(0);
         }
@@ -95,7 +97,6 @@ impl SystemMonitor {
     }
 
     fn parse_cpu_info(cpu: &Processor) -> (String, f32) {
-        //println!("{:?}", (String::from(cpu.get_name()), cpu.get_cpu_usage()));
         (String::from(cpu.get_name()), cpu.get_cpu_usage())
     }
 

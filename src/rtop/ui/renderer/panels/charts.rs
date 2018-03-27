@@ -1,5 +1,6 @@
 use rtop::app::App;
 use rtop::ui::renderer::panels::cpuusage::render_cpu_usage;
+use rtop::ui::renderer::panels::processes::render_processes;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
@@ -10,7 +11,7 @@ use tui::style::{Color, Modifier, Style};
 
 
 pub fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    let sizes = vec![Size::Percent(20), Size::Percent(80)];
+    let sizes = vec![Size::Percent(35), Size::Percent(65)];
     Group::default()
         .direction(Direction::Horizontal)
         .sizes(&sizes)
@@ -25,7 +26,7 @@ fn render_sidebar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .direction(Direction::Vertical)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
-            render_lists(t, app, &chunks[0]);
+            render_processes(t, app, &chunks[0]);
             render_bar_graph(t, app, &chunks[1]);
         });
 }
@@ -52,21 +53,9 @@ fn render_lists(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .direction(Direction::Horizontal)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
-            render_selctable_list(t, app, &chunks[0]);
+            //render_selctable_list(t, app, &chunks[0]);
             render_streams(t, app, &chunks[1]);
         });
-}
-
-fn render_selctable_list(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    SelectableList::default()
-        .block(Block::default().borders(Borders::ALL).title("List"))
-        .items(&app.items)
-        .select(app.selected)
-        .highlight_style(
-            Style::default().fg(Color::Yellow).modifier(Modifier::Bold),
-        )
-        .highlight_symbol(">")
-        .render(t, area);
 }
 
 fn render_streams(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
