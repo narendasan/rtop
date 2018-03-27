@@ -23,12 +23,6 @@ use rtop::app::App;
 use rtop::cmd::Cmd;
 use rtop::event::Event;
 use rtop::ui::renderer::render::render;
-use rtop::datastreams::randomsignal::RandomSignal;
-
-use tui::widgets::Dataset;
-use tui::style::Color;
-use tui::style::Style;
-use tui::widgets::Marker;
 
 fn main() {
     stderrlog::new()
@@ -38,9 +32,8 @@ fn main() {
         .unwrap();
 
     info!("Start");
-    let mut rand_signal = RandomSignal::new(0, 100);
     //Program
-    let mut app = App::new(5000);
+    let mut app = App::new(10000);
     let (tx, rx) = mpsc::channel();
     let input_tx = tx.clone();
 
@@ -59,7 +52,7 @@ fn main() {
         let tx = tx.clone();
         loop {
             tx.send(Event::Tick).unwrap();
-            thread::sleep(time::Duration::from_millis(500));
+            thread::sleep(time::Duration::from_millis(1000));
         }
     });
 

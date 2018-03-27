@@ -10,7 +10,7 @@ use tui::style::{Color, Style};
 
 pub fn render_processes(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     let mut processes_by_cpu = app.sys_info.process_info.clone();
-    processes_by_cpu.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap());
+    processes_by_cpu.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
 
     let selected_style = Style::default().fg(Color::White).bg(Color::Green);
     let default_style = Style::default().fg(Color::Cyan);
@@ -23,7 +23,7 @@ pub fn render_processes(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) 
                 &default_style
             };
             //println!("{}", s.2);
-            Row::StyledData(vec![s.0.to_string(), s.1.to_string(), s.2.to_string(), s.3.to_string()].into_iter(), style)
+            Row::StyledData(vec![s.0.to_string(), s.1.to_string(), format!("{:.2}", s.2), s.3.to_string()].into_iter(), style)
         }),
     ).block(Block::default().title("Processes").borders(Borders::ALL))
         .header_style(Style::default().fg(Color::Yellow))

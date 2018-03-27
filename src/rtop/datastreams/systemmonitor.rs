@@ -132,7 +132,7 @@ impl SystemMonitor {
     }
 
     fn parse_process_info(pid: &Pid, process: &Process) -> (u32, String, f32, u64) {
-        (pid.as_u32(), String::from(process.name()), process.cpu_usage() * 100.0, process.memory())
+        (pid.as_u32(), String::from(process.name()), process.cpu_usage(), process.memory())
     }
 
     fn parse_networking_info(net: (u64, u64)) -> (u64, u64) {
