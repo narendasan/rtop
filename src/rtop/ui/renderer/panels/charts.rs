@@ -1,5 +1,5 @@
 use rtop::app::App;
-use rtop::ui::renderer::panels::cpuusage::render_cpu_usage;
+use rtop::ui::renderer::panels::cpuusage::render_cpu_usage_history;
 use rtop::ui::renderer::panels::processes::render_processes;
 use rtop::ui::renderer::panels::memoryswapusage::render_mem_and_swap_history;
 
@@ -18,7 +18,7 @@ pub fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .sizes(&sizes)
         .render(t, area, |t, chunks| {
                 render_sidebar(t, app, &chunks[0]);
-                render_cpu_usage(t, app, &chunks[1]);
+                render_cpu_usage_history(t, app, &chunks[1]);
         });
 }
 

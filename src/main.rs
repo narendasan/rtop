@@ -68,7 +68,7 @@ fn main() {
             terminal.resize(size).unwrap();
             term_size = size;
         }
-        render(&mut terminal, &app, &term_size).unwrap();
+        //render(&mut terminal, &app, &term_size).unwrap();
         let evt = rx.recv().unwrap();
         {
             match evt {

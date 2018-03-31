@@ -23,6 +23,9 @@ pub struct SystemMonitor {
     pub net_out_history: Vec<u64>, 
     pub net_in: u64,
     pub net_out: u64, 
+    pub cpu_temp: Option<f32>, 
+    pub gpu_temp: Option<f32>,
+    pub battery_temp: Option<f32>,
     system_info: System,
     max_sparkline_len: usize,
     max_history_len: usize,
@@ -49,6 +52,9 @@ impl DataStream for SystemMonitor {
             system_info: System::new(),
             max_sparkline_len: 50,
             max_history_len: max_hist_len,
+            cpu_temp: None, 
+            gpu_temp: None,
+            battery_temp: None,
         }
     }
 
@@ -117,6 +123,10 @@ impl DataStream for SystemMonitor {
             self.net_out_history.remove(0);
         }
         self.net_out_history.push(out);
+
+        let components = self.system_info.get_components_list();
+        println!("{:?}", components);
+
     }
 }
 
