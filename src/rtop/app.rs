@@ -119,13 +119,28 @@ impl <'a> App<'a> {
                                         .map(|x| (x.0 as f64, x.1.clone() as f64))
                                         .collect::<Vec<(f64, f64)>>();
                 let mut core_name = name.clone();
-                let core_num = core_name.parse::<u32>().unwrap();
-                core_name = format!("Core: {} ({:.2}%)", core_name, 
-                                                      (self.sys_info.cpu_core_info[(core_num - 1) as usize].1 * 100.0).to_string());
+                let mut core_num = 0;
+                match core_name.parse::<u32>() {
+                    Ok(num) => {core_num = num - 1}, //MacOS 
+                    Err(_) => {  //Linux 
+                        if core_name.contains("cpu") {
+                            let (_,s) = core_name.split_at_mut(3);
+                            match s.parse::<u32>() {
+                                Ok(num) => {core_num = num},
+                                Err(_) => (), 
+                            }
+                        } else {
+                            panic!("Cannot get CPU ID");
+                        }
+                    }
+                }
+                let core_label = core_num.to_string();
+                core_name = format!("Core: {} ({:.2}%)", core_label, 
+                                                      (self.sys_info.cpu_core_info[(core_num) as usize].1 * 100.0).to_string());
                 self.cpu_panel_memory.insert(core_num, (core_name, pairwise_data));
             }
         }
-        //Memory History Parsing
+        //Memory History Parsing 
         {
             self.mem_panel_memory =  self.sys_info.memory_usage_history.iter()
                                                                         .enumerate()
