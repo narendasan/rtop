@@ -1,2 +1,4 @@
 pub mod render;
-mod panels;
+mod charts;
+
+use self::charts::render_charts as render_charts;

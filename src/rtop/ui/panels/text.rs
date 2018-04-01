@@ -4,8 +4,7 @@ use tui::widgets::{Block, Borders, Paragraph, Widget};
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
-
-pub fn render_text(t: &mut Terminal<MouseBackend>, area: &Rect) {
+pub fn text_panel(t: &mut Terminal<MouseBackend>, area: &Rect) {
     Paragraph::default()
         .block(
             Block::default()

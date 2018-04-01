@@ -1,6 +1,6 @@
 [package]
 name = "rtop"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Naren Dasan <naren@narendasan.com>"]
 description = "A system monitor implemented in Rust"
 homepage = "https://github.com/narendasan/rtop"
@@ -12,8 +12,8 @@ license = "NCSA"
 
 [dependencies]
 termion = "1.5.1"
-log = "0.3.8"
-stderrlog = "0.2"
+log = "0.4.1"
+stderrlog = "0.3.0"
 rand = "0.4.1"
 tui = "0.2.0"
 sysinfo = "0.5.1"

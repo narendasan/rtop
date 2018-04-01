@@ -6,7 +6,7 @@ use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Marker, Widget};
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
-pub fn render_mem_and_swap_history(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+pub fn mem_and_swap_history_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     Chart::default()
         .block(
             Block::default()
