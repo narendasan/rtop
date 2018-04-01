@@ -146,6 +146,7 @@ impl <'a> App<'a> {
                                                                         .map(|(i, u)| (i as f64, u.clone()))
                                                                         .collect::<Vec<(f64, f64)>>();                         
             self.mem_usage_str = format!("Memory ({:.2}%)", 100.0 * self.sys_info.memory_usage as f64 / self.sys_info.total_memory as f64);
+            println!("{:?}", self.mem_usage_str);
         }
         //Swap History Parsing
         {

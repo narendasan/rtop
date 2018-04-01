@@ -125,7 +125,7 @@ impl DataStream for SystemMonitor {
         self.net_out_history.push(out);
 
         let components = self.system_info.get_components_list();
-        println!("{:?}", components);
+        //println!("{:?}", components);
 
     }
 }
