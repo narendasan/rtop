@@ -40,10 +40,10 @@ impl DataStream for SystemMonitor {
             cpu_usage_history: HashMap::new(),
             disk_info: Vec::new(),
             memory_usage: 0,
-            total_memory: 0,
+            total_memory: 10,
             memory_usage_history: vec![0.0; max_hist_len],
             swap_usage: 0,
-            total_swap: 0,
+            total_swap: 10,
             swap_usage_history: vec![0.0; max_hist_len],
             net_in_history: Vec::new(),
             net_out_history: Vec::new(), 
@@ -97,6 +97,9 @@ impl DataStream for SystemMonitor {
         self.total_memory = self.system_info.get_total_memory();
         self.swap_usage = self.system_info.get_used_swap();
         self.total_swap = self.system_info.get_total_swap();
+        if self.total_swap == 0 {
+            self.total_swap = 10;
+        }
 
         while self.memory_usage_history.len() >= self.max_history_len {
             self.memory_usage_history.remove(0);
@@ -125,8 +128,7 @@ impl DataStream for SystemMonitor {
         self.net_out_history.push(out);
 
         let components = self.system_info.get_components_list();
-        println!("{:?}", components);
-
+        //println!("{:?}", components);
     }
 }
 

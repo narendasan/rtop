@@ -139,6 +139,8 @@ impl <'a> App<'a> {
                 self.cpu_panel_memory.insert(core_num, (core_name, pairwise_data));
             }
         }
+        //println!("{:?},{:?}", 100.0 * self.sys_info.memory_usage as f64 / self.sys_info.total_memory as f64, 100.0 * self.sys_info.swap_usage as f64 / self.sys_info.total_swap as f64);
+
         //Memory History Parsing 
         {
             self.mem_panel_memory =  self.sys_info.memory_usage_history.iter()
