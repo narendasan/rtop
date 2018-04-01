@@ -6,11 +6,7 @@ use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Marker, Widget};
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
-<<<<<<< HEAD:src/rtop/ui/renderer/panels/cpuusage.rs
-pub fn render_cpu_usage_history(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-=======
 pub fn cpu_usage_history_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
->>>>>>> 7b5e9946d1f6667aeb4fe3ef068609c5dd354d96:src/rtop/ui/panels/cpuusage.rs
     let mut data = app.cpu_panel_memory.iter()
                                     .map(|x| {(x.0.clone(), (x.1).0.clone(), (x.1).1.clone())})
                                     .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
