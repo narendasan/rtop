@@ -5,7 +5,7 @@ use tui::widgets::{Block, Borders, Gauge, Sparkline, Widget};
 use tui::layout::{Direction, Group, Rect, Size};
 use tui::style::{Color, Modifier, Style};
 
-pub fn render_network_info(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+pub fn network_info_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     Block::default()
         .borders(Borders::ALL)
         .title("Network")

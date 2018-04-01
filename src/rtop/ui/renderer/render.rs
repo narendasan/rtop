@@ -1,7 +1,8 @@
 
 use std::io;
 use rtop::app::App;
-use rtop::ui::renderer::panels;
+use rtop::ui::panels::{network_info_panel};
+use rtop::ui::renderer::*;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
@@ -45,8 +46,8 @@ fn draw_first_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .direction(Direction::Vertical)
         .sizes(&[Size::Percent(50), Size::Percent(25), Size::Percent(25)])
         .render(t, area, |t, chunks| {
-            panels::charts::draw_charts(t, app, &chunks[0]);
-            panels::network::render_network_info(t, app, &chunks[1]);
+            render_charts(t, app, &chunks[0]);
+            network_info_panel(t, app, &chunks[1]);
             //panels::text::render_text(t, &chunks[2]);
         });
 }

@@ -1,7 +1,6 @@
 use rtop::app::App;
-use rtop::ui::renderer::panels::cpuusage::render_cpu_usage;
-use rtop::ui::renderer::panels::processes::render_processes;
-use rtop::ui::renderer::panels::memoryswapusage::render_mem_and_swap_history;
+use rtop::ui::panels::{cpu_usage_history_panel, processes_panel, 
+                       mem_and_swap_history_panel};
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
@@ -11,24 +10,24 @@ use tui::layout::{Direction, Group, Rect, Size};
 use tui::style::{Color, Modifier, Style};
 
 
-pub fn draw_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+pub fn render_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     let sizes = vec![Size::Percent(35), Size::Percent(65)];
     Group::default()
         .direction(Direction::Horizontal)
         .sizes(&sizes)
         .render(t, area, |t, chunks| {
-                render_sidebar(t, app, &chunks[0]);
-                render_cpu_usage(t, app, &chunks[1]);
+                sidebar(t, app, &chunks[0]);
+                cpu_usage_history_panel(t, app, &chunks[1]);
         });
 }
 
-fn render_sidebar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+fn sidebar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     Group::default()
         .direction(Direction::Vertical)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
-            render_processes(t, app, &chunks[0]);
-            render_mem_and_swap_history(t, app, &chunks[1]);
+            processes_panel(t, app, &chunks[0]);
+            mem_and_swap_history_panel(t, app, &chunks[1]);
         });
 }
 

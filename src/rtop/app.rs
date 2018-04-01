@@ -8,7 +8,6 @@ use rtop::ui::tabs::Tabs;
 use rtop::datastreams::datastream::DataStream;
 use rtop::datastreams::servers::Servers;
 use rtop::datastreams::systemmonitor::SystemMonitor;
-use rtop::datastreams::randomsignal::RandomSignal;
 
 pub struct App<'a> {
     pub items: Vec<&'a str>,

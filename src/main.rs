@@ -93,5 +93,3 @@ fn main() {
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();
 }
-
-//Need to add back in q for quit, make sure resizing works
