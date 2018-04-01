@@ -3,7 +3,7 @@ extern crate sysinfo;
 use std::str;
 use std::collections::HashMap;
 use self::sysinfo::{Pid, Disk, Processor, Process, System, ProcessExt,
-                    SystemExt, DiskExt, ProcessorExt, NetworkData, NetworkExt, AsU32};
+                    SystemExt, DiskExt, ProcessorExt, NetworkExt, AsU32};
 
 use rtop::datastreams::datastream::DataStream;
 

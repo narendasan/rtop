@@ -4,8 +4,7 @@ use rtop::ui::panels::{cpu_usage_history_panel, processes_panel,
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
-use tui::widgets::{BarChart, Block, Borders, Item, List,
-                   SelectableList, Widget};
+use tui::widgets::{BarChart, Block, Borders, Widget};
 use tui::layout::{Direction, Group, Rect, Size};
 use tui::style::{Color, Modifier, Style};
 

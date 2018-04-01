@@ -1,9 +1,9 @@
 use rtop::app::App;
 use tui::Terminal;
 use tui::backend::MouseBackend;
-use tui::widgets::{Block, Borders, Gauge, Sparkline, Widget};
+use tui::widgets::{Block, Borders, Sparkline, Widget};
 use tui::layout::{Direction, Group, Rect, Size};
-use tui::style::{Color, Modifier, Style};
+use tui::style::{Color, Style};
 
 pub fn network_info_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     Block::default()
