@@ -1,13 +1,16 @@
+extern crate sysinfo;
+
 use std::collections::HashMap;
 
 use tui::style::Color;
 use termion::event::Key;
+use self::sysinfo::{System, SystemExt};
 
 use rtop::cmd::Cmd;
 use rtop::ui::tabs::Tabs;
-use rtop::datastreams::datastream::DataStream;
+use rtop::datastreams::{DataStream, DiskMonitor, MemoryMonitor, 
+                        CPUMonitor, NetworkMonitor, ProcessMonitor};
 use rtop::datastreams::servers::Servers;
-use rtop::datastreams::systemmonitor::SystemMonitor;
 
 pub struct App<'a> {
     pub items: Vec<&'a str>,
@@ -28,7 +31,12 @@ pub struct App<'a> {
     pub swap_usage_str: String,
     pub net_in_str: String,
     pub net_out_str: String,
-    pub sys_info: SystemMonitor,
+    pub disk_info: DiskMonitor,
+    pub cpu_info: CPUMonitor,
+    pub net_info: NetworkMonitor,
+    pub mem_info: MemoryMonitor,
+    pub process_info: ProcessMonitor,
+    pub sys_monitor: System,
 }
 
 impl <'a> App<'a> {
@@ -67,7 +75,12 @@ impl <'a> App<'a> {
             swap_usage_str: String::new(),
             net_in_str: String::new(),
             net_out_str: String::new(),
-            sys_info: DataStream::new(history_len),
+            disk_info: DataStream::new(history_len),
+            cpu_info: DataStream::new(history_len),
+            net_info: DataStream::new(history_len),
+            mem_info: DataStream::new(history_len),
+            process_info: DataStream::new(history_len),
+            sys_monitor: System::new(),
         }
     }
     pub fn input_handler(&mut self, input: Key) -> Option<Cmd>{
@@ -80,7 +93,7 @@ impl <'a> App<'a> {
                     self.selected_proc -= 1
                 };
             }
-            Key::Down => if self.selected_proc < self.sys_info.process_info.len() - 1 {
+            Key::Down => if self.selected_proc < self.process_info.process_info.len() - 1 {
                 self.selected_proc += 1;
             },
             Key::Left => {
@@ -110,9 +123,15 @@ impl <'a> App<'a> {
         if self.color_index >= self.colors.len() {
             self.color_index = 0;
         }
+        self.sys_monitor.refresh_all();
+        self.disk_info.poll(&self.sys_monitor);
+        self.cpu_info.poll(&self.sys_monitor);
+        self.net_info.poll(&self.sys_monitor);
+        self.mem_info.poll(&self.sys_monitor);
+        self.process_info.poll(&self.sys_monitor);
         //CPU History Parsing
         {
-            for (name, usage) in &self.sys_info.cpu_usage_history {
+            for (name, usage) in &self.cpu_info.cpu_usage_history {
                 let pairwise_data = usage.iter()
                                         .enumerate()
                                         .map(|x| (x.0 as f64, x.1.clone() as f64))
@@ -135,56 +154,51 @@ impl <'a> App<'a> {
                 }
                 let core_label = core_num.to_string();
                 core_name = format!("Core: {} ({:.2}%)", core_label, 
-                                                      (self.sys_info.cpu_core_info[(core_num) as usize].1 * 100.0).to_string());
+                                                      (self.cpu_info.cpu_core_info[(core_num) as usize].1 * 100.0).to_string());
                 self.cpu_panel_memory.insert(core_num, (core_name, pairwise_data));
             }
         }
-        //println!("{:?},{:?}", 100.0 * self.sys_info.memory_usage as f64 / self.sys_info.total_memory as f64, 100.0 * self.sys_info.swap_usage as f64 / self.sys_info.total_swap as f64);
-
         //Memory History Parsing 
         {
-            self.mem_panel_memory =  self.sys_info.memory_usage_history.iter()
+            self.mem_panel_memory =  self.mem_info.memory_usage_history.iter()
                                                                         .enumerate()
                                                                         .map(|(i, u)| (i as f64, u.clone()))
                                                                         .collect::<Vec<(f64, f64)>>();                         
-            self.mem_usage_str = format!("Memory ({:.2}%)", 100.0 * self.sys_info.memory_usage as f64 / self.sys_info.total_memory as f64);
-            println!("{:?}", self.mem_usage_str);
+            self.mem_usage_str = format!("Memory ({:.2}%)", 100.0 * self.mem_info.memory_usage as f64 / self.mem_info.total_memory as f64);
         }
         //Swap History Parsing
         {
-            self.swap_panel_memory =  self.sys_info.swap_usage_history.iter()
+            self.swap_panel_memory =  self.mem_info.swap_usage_history.iter()
                                                                       .enumerate()
                                                                       .map(|(i, u)| (i as f64, u.clone()))
                                                                       .collect::<Vec<(f64, f64)>>(); 
-            self.swap_usage_str = format!("Swap ({:.2}%)", 100.0 * self.sys_info.swap_usage as f64 / self.sys_info.total_swap as f64);
+            self.swap_usage_str = format!("Swap ({:.2}%)", 100.0 * self.mem_info.swap_usage as f64 / self.mem_info.total_swap as f64);
         }
         //Network Parsing
         {
             
-            let (scalar, unit) = App::si_prefix(self.sys_info.net_in); 
-            self.net_in_str = format!("Current Incoming Traffic: {} {}/s", self.sys_info.net_in / scalar, unit);
+            let (scalar, unit) = App::si_prefix(self.net_info.net_in); 
+            self.net_in_str = format!("Current Incoming Traffic: {} {}/s", (self.net_info.net_in) / scalar, unit);
 
 
-            let (scalar, unit) = App::si_prefix(self.sys_info.net_out); 
-            self.net_out_str = format!("Current Outgoing Network Traffic: {} {}/s", self.sys_info.net_out / scalar, unit);    
+            let (scalar, unit) = App::si_prefix(self.net_info.net_out); 
+            self.net_out_str = format!("Current Outgoing Network Traffic: {} {}/s", (self.net_info.net_out) / scalar, unit);    
         }
-
-        self.sys_info.poll();
     }
 
-    fn si_prefix(bytes: u64) -> (u64, String) {
-        let b = bytes as f64;
+    fn si_prefix(bits: u64) -> (u64, String) {
+        let b = bits as f64;
         if b == 0.0 {
             return (1 as u64, String::from("B"));
         }
         match b.log(10.0) as u64 {
-            0 | 1 | 2 => ((10 as u64).pow(0), String::from("B")),
-            3 | 4 | 5 => ((10 as u64).pow(3), String::from("KB")),
-            6 | 7 | 8 => ((10 as u64).pow(6), String::from("MB")),
-            9 | 10 | 11 => ((10 as u64).pow(9), String::from("GB")),
-            12 | 13 | 14 => ((10 as u64).pow(12), String::from("TB")),
-            15 | 16 | 17 => ((10 as u64).pow(15), String::from("PB")),
-            _ => ((10 as u64).pow(18), String::from("EB")),
+            0 | 1 | 2 => ((10 as u64).pow(0), String::from("b")),
+            3 | 4 | 5 => ((10 as u64).pow(3), String::from("Kb")),
+            6 | 7 | 8 => ((10 as u64).pow(6), String::from("Mb")),
+            9 | 10 | 11 => ((10 as u64).pow(9), String::from("Gb")),
+            12 | 13 | 14 => ((10 as u64).pow(12), String::from("Tb")),
+            15 | 16 | 17 => ((10 as u64).pow(15), String::from("Pb")),
+            _ => ((10 as u64).pow(18), String::from("Eb")),
         }
     }
 }

@@ -18,14 +18,14 @@ pub fn network_info_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect
             Sparkline::default()
                 .block(Block::default().title(&app.net_in_str))
                 .style(Style::default().fg(Color::Green))
-                .data(&app.sys_info.net_out_history)
-                .max(100000)
+                .data(&app.net_info.net_in_history)
+                .max(1000000)
                 .render(t, &chunks[0]);
             Sparkline::default()
                 .block(Block::default().title(&app.net_out_str))
                 .style(Style::default().fg(Color::Green))
-                .data(&app.sys_info.net_out_history)
-                .max(100000)
+                .data(&app.net_info.net_out_history)
+                .max(1000000)
                 .render(t, &chunks[2]);
         });
 }

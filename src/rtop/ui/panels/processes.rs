@@ -9,7 +9,7 @@ use tui::style::{Color, Style};
 
 
 pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    let mut processes_by_cpu = app.sys_info.process_info.clone();
+    let mut processes_by_cpu = app.process_info.process_info.clone();
     processes_by_cpu.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
 
     let selected_style = Style::default().fg(Color::White).bg(Color::Green);
@@ -22,7 +22,6 @@ pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
             } else {
                 &default_style
             };
-            //println!("{}", s.2);
             Row::StyledData(vec![s.0.to_string(), s.1.to_string(), format!("{:.2}", s.2), s.3.to_string()].into_iter(), style)
         }),
     ).block(Block::default().title("Processes").borders(Borders::ALL))

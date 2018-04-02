@@ -25,15 +25,14 @@ use rtop::event::Event;
 use rtop::ui::renderer::render::render;
 
 fn main() {
-    stderrlog::new()
-        .module(module_path!())
-        .verbosity(4)
-        .init()
-        .unwrap();
+    stderrlog::new().module(module_path!())
+                    .verbosity(4)
+                    .init()
+                    .unwrap();
 
     info!("Start");
     //Program
-    let mut app = App::new(10000);
+    let mut app = App::new(150);
     let (tx, rx) = mpsc::channel();
     let input_tx = tx.clone();
 
@@ -68,7 +67,6 @@ fn main() {
             terminal.resize(size).unwrap();
             term_size = size;
         }
-        render(&mut terminal, &app, &term_size).unwrap();
         let evt = rx.recv().unwrap();
         {
             match evt {
@@ -89,6 +87,7 @@ fn main() {
                 } 
             }
         }
+        render(&mut terminal, &app, &term_size).unwrap();
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();

@@ -12,7 +12,6 @@ pub fn cpu_usage_history_panel(t: &mut Terminal<MouseBackend>, app: &App, area: 
                                     .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
     data.sort_by_key(|k| k.0);
 
-    //println!("{:?}", data.iter().map(|x| {x.1.clone()}).collect::<Vec<String>>());
 
     Chart::default()
         .block(

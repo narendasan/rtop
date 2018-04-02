@@ -1,7 +1,7 @@
 
 use std::io;
 use rtop::app::App;
-use rtop::ui::panels::{network_info_panel};
+use rtop::ui::panels::{network_info_panel, mem_and_swap_history_panel};
 use rtop::ui::renderer::*;
 
 use tui::Terminal;
@@ -44,10 +44,21 @@ fn render_tab_bar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
 fn draw_first_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     Group::default()
         .direction(Direction::Vertical)
-        .sizes(&[Size::Percent(50), Size::Percent(25), Size::Percent(25)])
+        .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
             render_charts(t, app, &chunks[0]);
-            network_info_panel(t, app, &chunks[1]);
+            render_bottom_thrid(t, app, &chunks[1]);
+            //panels::text::render_text(t, &chunks[2]);
+        });
+}
+
+fn render_bottom_thrid(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+    Group::default()
+        .direction(Direction::Horizontal)
+        .sizes(&[Size::Percent(50), Size::Percent(50)])
+        .render(t, area, |t, chunks| {
+            network_info_panel(t, app, &chunks[0]);
+            mem_and_swap_history_panel(t, app, &chunks[1]);
             //panels::text::render_text(t, &chunks[2]);
         });
 }
