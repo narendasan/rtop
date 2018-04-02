@@ -16,7 +16,7 @@ pub fn render(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) -> Result<
         .direction(Direction::Vertical)
         .sizes(&[Size::Fixed(3), Size::Min(0)])
         .render(t, area, |t, chunks| {
-            render_tab_bar(t, app, &chunks[0]);
+            //render_tab_bar(t, app, &chunks[0]);
             match app.tabs.selection {
                 0 => {
                     draw_first_tab(t, app, &chunks[1]);
