@@ -48,7 +48,13 @@ impl <'a> App<'a> {
             events: vec![("Event1", "INFO"),],
             selected_proc: 0,
             tabs: Tabs {
-                titles: vec!["Tab0", "Tab1"],
+                titles: { 
+                    if cfg!(feature = "gpu-monitor") { 
+                        vec!["System/OS/CPU", "GPU"]
+                    } else {
+                        vec!["System/OS/CPU"]
+                    }
+                },
                 selection: 0,
             },
             show_chart: true,
@@ -138,18 +144,20 @@ impl <'a> App<'a> {
                                         .collect::<Vec<(f64, f64)>>();
                 let mut core_name = name.clone();
                 let mut core_num = 0;
-                match core_name.parse::<u32>() {
-                    Ok(num) => {core_num = num - 1}, //MacOS 
-                    Err(_) => {  //Linux 
-                        if core_name.contains("cpu") {
-                            let (_,s) = core_name.split_at_mut(3);
-                            match s.parse::<u32>() {
-                                Ok(num) => {core_num = num},
-                                Err(_) => (), 
-                            }
-                        } else {
-                            panic!("Cannot get CPU ID");
+                if cfg!(target_os = "macos") {
+                    match core_name.parse::<u32>() {
+                        Ok(num) => {core_num = num - 1}, //MacOS 
+                        Err(_) => {panic!("Unable to parse CPU ID")}
+                    }
+                } else {
+                    if core_name.contains("cpu") {
+                        let (_,s) = core_name.split_at_mut(3);
+                        match s.parse::<u32>() {
+                            Ok(num) => {core_num = num},
+                            Err(_) => {panic!("Unable to parse CPU ID")}, 
                         }
+                    } else {
+                        panic!("Cannot get CPU ID");
                     }
                 }
                 let core_label = core_num.to_string();
