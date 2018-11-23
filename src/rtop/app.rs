@@ -12,9 +12,10 @@ use self::nvml::{NVML};
 
 use rtop::cmd::Cmd;
 use rtop::ui::tabs::Tabs;
-use rtop::datastreams::{DataStream, DiskMonitor, MemoryMonitor, GPUMonitor, 
+use rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor, 
                         CPUMonitor, NetworkMonitor, ProcessMonitor};
-use rtop::datastreams::servers::Servers;
+#[cfg(feature = "gpu-monitor")]
+use rtop::datastreams::{GPUDataStream, GPUMonitor};
 
 pub struct App<'a> {
     pub selected_proc: usize,
@@ -63,13 +64,13 @@ impl <'a> App<'a> {
             swap_usage_str: String::new(),
             net_in_str: String::new(),
             net_out_str: String::new(),
-            disk_info: DataStream::new(history_len),
-            cpu_info: DataStream::new(history_len),
+            disk_info: SysDataStream::new(history_len),
+            cpu_info: SysDataStream::new(history_len),
             #[cfg(feature = "gpu-monitor")]
-            gpu_info: DataStream::new(history_len),
-            net_info: DataStream::new(history_len),
-            mem_info: DataStream::new(history_len),
-            process_info: DataStream::new(history_len),
+            gpu_info: GPUDataStream::new(history_len),
+            net_info: SysDataStream::new(history_len),
+            mem_info: SysDataStream::new(history_len),
+            process_info: SysDataStream::new(history_len),
             sys_info_src: System::new(),
             #[cfg(feature = "gpu-monitor")]
             gpu_info_src: (NVML::init().or_else(|err| Err(String::from(err.description()))))?
@@ -104,7 +105,7 @@ impl <'a> App<'a> {
     }
 
     pub fn update(&mut self) {
-        self.sys_monitor.refresh_all();
+        self.sys_info_src.refresh_all();
         self.disk_info.poll(&self.sys_info_src);
         self.cpu_info.poll(&self.sys_info_src);
         self.net_info.poll(&self.sys_info_src);

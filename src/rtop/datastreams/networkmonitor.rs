@@ -2,7 +2,7 @@ extern crate sysinfo;
 
 use self::sysinfo::{System, SystemExt, NetworkExt};
 
-use rtop::datastreams::datastream::DataStream;
+use rtop::datastreams::datastream::SysDataStream;
 
 
 pub struct NetworkMonitor {
@@ -14,7 +14,7 @@ pub struct NetworkMonitor {
     max_history_len: usize,
 }
 
-impl DataStream for NetworkMonitor {
+impl SysDataStream for NetworkMonitor {
     fn new(max_hist_len: usize) -> Self {        
         Self {
             net_in_history: Vec::new(),

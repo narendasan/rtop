@@ -1,14 +1,14 @@
 extern crate sysinfo;
 
 use self::sysinfo::{Pid, AsU32, Process, System, ProcessExt, SystemExt};
-use rtop::datastreams::datastream::DataStream;
+use rtop::datastreams::datastream::SysDataStream;
 
 pub struct ProcessMonitor {
     pub process_info: Vec<(u32, String, f32, u64)>, //PID, Command, CPU. mem (kb)
     max_history_len: usize,
 }
 
-impl DataStream for ProcessMonitor {
+impl SysDataStream for ProcessMonitor {
     fn new(max_hist_len: usize) -> Self {        
         Self {
             process_info: Vec::new(),

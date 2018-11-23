@@ -2,7 +2,7 @@ extern crate sysinfo;
 
 use self::sysinfo::{System, SystemExt};
 
-use rtop::datastreams::datastream::DataStream;
+use rtop::datastreams::datastream::SysDataStream;
 
 pub struct MemoryMonitor {
     pub memory_usage: u64,
@@ -14,7 +14,7 @@ pub struct MemoryMonitor {
     max_history_len: usize,
 }
 
-impl DataStream for MemoryMonitor {
+impl SysDataStream for MemoryMonitor {
     fn new(max_hist_len: usize) -> Self {        
         Self {
             memory_usage: 0,

@@ -3,7 +3,7 @@ extern crate sysinfo;
 use std::collections::HashMap;
 use self::sysinfo::{System, SystemExt, Processor, ProcessorExt};
 
-use rtop::datastreams::datastream::DataStream;
+use rtop::datastreams::datastream::SysDataStream;
 
 
 pub struct CPUMonitor {
@@ -14,7 +14,7 @@ pub struct CPUMonitor {
     max_history_len: usize,
 }
 
-impl DataStream for CPUMonitor {
+impl SysDataStream for CPUMonitor {
     fn new(max_hist_len: usize) -> Self {        
         Self {
             cpu_usage: 0.0,
