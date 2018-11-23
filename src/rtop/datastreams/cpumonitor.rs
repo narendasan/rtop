@@ -11,7 +11,6 @@ pub struct CPUMonitor {
     pub cpu_core_info: Vec<(String, f32)>, //Name, Usage
     pub cpu_usage_history: HashMap<String, Vec<f32>>, //Name, Usage
     pub cpu_temp: Option<f32>, 
-    system_info: System,
     max_history_len: usize,
 }
 
@@ -22,7 +21,6 @@ impl DataStream for CPUMonitor {
             cpu_core_info: Vec::new(),
             cpu_usage_history: HashMap::new(),
             cpu_temp: None,
-            system_info: System::new(),
             max_history_len: max_hist_len, 
         }
     }

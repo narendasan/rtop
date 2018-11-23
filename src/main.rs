@@ -5,6 +5,8 @@ extern crate stderrlog;
 extern crate termion;
 extern crate tui;
 extern crate sysinfo;
+#[cfg(feature = "gpu-monitor")]
+extern crate nvml_wrapper as nvml;
 
 mod rtop;
 
@@ -12,6 +14,7 @@ use std::io;
 use std::thread;
 use std::time;
 use std::sync::mpsc;
+use std::process::exit;
 
 use termion::event;
 use termion::input::TermRead;
@@ -25,6 +28,16 @@ use rtop::event::Event;
 use rtop::ui::renderer::render::render;
 
 fn main() {
+    ::std::process::exit(match _main() {
+       Ok(_) => 0,
+       Err(err) => {
+           eprintln!("error: {:?}", err);
+           1
+       }
+    });
+}
+
+fn _main() -> Result<(), String> {
     stderrlog::new().module(module_path!())
                     .verbosity(4)
                     .init()
@@ -32,7 +45,7 @@ fn main() {
 
     info!("Start");
     //Program
-    let mut app = App::new(150);
+    let mut app = App::new(150)?;
     let (tx, rx) = mpsc::channel();
     let input_tx = tx.clone();
 
@@ -91,4 +104,5 @@ fn main() {
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();
+    Ok(())
 }

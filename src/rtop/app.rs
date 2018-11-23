@@ -1,29 +1,26 @@
 extern crate sysinfo;
+#[cfg(feature = "gpu-monitor")]
+extern crate nvml_wrapper as nvml;
 
 use std::collections::HashMap;
 
 use tui::style::Color;
 use termion::event::Key;
 use self::sysinfo::{System, SystemExt};
+#[cfg(feature = "gpu-monitor")]
+use self::nvml::{NVML};
 
 use rtop::cmd::Cmd;
 use rtop::ui::tabs::Tabs;
-use rtop::datastreams::{DataStream, DiskMonitor, MemoryMonitor, 
+use rtop::datastreams::{DataStream, DiskMonitor, MemoryMonitor, GPUMonitor, 
                         CPUMonitor, NetworkMonitor, ProcessMonitor};
 use rtop::datastreams::servers::Servers;
 
 pub struct App<'a> {
-    pub items: Vec<&'a str>,
-    pub events: Vec<(&'a str, &'a str)>,
     pub selected_proc: usize,
     pub tabs: Tabs<'a>,
     pub show_chart: bool,
-    pub progress: u16,
-    pub data4: Vec<(&'a str, u64)>,
     pub window: [f64; 2],
-    pub colors: [Color; 2],
-    pub color_index: usize,
-    pub servers: Servers<'a>,
     pub cpu_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     pub mem_panel_memory: Vec<(f64, f64)>,
     pub mem_usage_str: String,
@@ -33,19 +30,19 @@ pub struct App<'a> {
     pub net_out_str: String,
     pub disk_info: DiskMonitor,
     pub cpu_info: CPUMonitor,
+    #[cfg(feature = "gpu-monitor")]
+    pub gpu_info: GPUMonitor,
     pub net_info: NetworkMonitor,
     pub mem_info: MemoryMonitor,
     pub process_info: ProcessMonitor,
-    pub sys_monitor: System,
+    pub sys_info_src: System,
+    #[cfg(feature = "gpu-monitor")]
+    pub gpu_info_src: NVML,
 }
 
 impl <'a> App<'a> {
-    pub fn new(history_len: usize) -> Self {
-        Self {
-            items: vec![
-            "Item1", "Item2", "Item3", "Item4", 
-            ],
-            events: vec![("Event1", "INFO"),],
+    pub fn new(history_len: usize) -> Result<Self, String> {
+        Ok(Self {
             selected_proc: 0,
             tabs: Tabs {
                 titles: { 
@@ -58,22 +55,7 @@ impl <'a> App<'a> {
                 selection: 0,
             },
             show_chart: true,
-            progress: 0,
-            data4: vec![
-                ("B1", 9),
-                ("B2", 12),
-                ("B3", 5),
-                ("B4", 8),
-                ("B5", 2),
-                ("B6", 4),
-                ("B7", 5),
-                ("B8", 9),
-                ("B9", 14),
-            ],
             window: [0.0, history_len as f64],
-            colors: [Color::Magenta, Color::Red],
-            color_index: 0,
-            servers: Servers::new(),
             cpu_panel_memory: HashMap::new(),
             mem_panel_memory: Vec::new(),
             mem_usage_str: String::new(),
@@ -83,12 +65,17 @@ impl <'a> App<'a> {
             net_out_str: String::new(),
             disk_info: DataStream::new(history_len),
             cpu_info: DataStream::new(history_len),
+            #[cfg(feature = "gpu-monitor")]
+            gpu_info: DataStream::new(history_len),
             net_info: DataStream::new(history_len),
             mem_info: DataStream::new(history_len),
             process_info: DataStream::new(history_len),
-            sys_monitor: System::new(),
-        }
+            sys_info_src: System::new(),
+            #[cfg(feature = "gpu-monitor")]
+            gpu_info_src: (NVML::init().or_else(|err| Err(String::from(err.description()))))?
+        })
     }
+
     pub fn input_handler(&mut self, input: Key) -> Option<Cmd>{
         match input {
             Key::Char('q') => {
@@ -117,24 +104,14 @@ impl <'a> App<'a> {
     }
 
     pub fn update(&mut self) {
-        self.progress += 5;
-        if self.progress > 100 {
-            self.progress = 0;
-        }
-        let i = self.data4.pop().unwrap();
-        self.data4.insert(0, i);
-        let i = self.events.pop().unwrap();
-        self.events.insert(0, i);
-        self.color_index += 1;
-        if self.color_index >= self.colors.len() {
-            self.color_index = 0;
-        }
         self.sys_monitor.refresh_all();
-        self.disk_info.poll(&self.sys_monitor);
-        self.cpu_info.poll(&self.sys_monitor);
-        self.net_info.poll(&self.sys_monitor);
-        self.mem_info.poll(&self.sys_monitor);
-        self.process_info.poll(&self.sys_monitor);
+        self.disk_info.poll(&self.sys_info_src);
+        self.cpu_info.poll(&self.sys_info_src);
+        self.net_info.poll(&self.sys_info_src);
+        self.mem_info.poll(&self.sys_info_src);
+        self.process_info.poll(&self.sys_info_src);
+        #[cfg(feature = "gpu-monitor")]
+        self.gpu_info.poll(&self.gpu_info_src);
         //CPU History Parsing
         {
             for (name, usage) in &self.cpu_info.cpu_usage_history {
@@ -191,6 +168,12 @@ impl <'a> App<'a> {
 
             let (scalar, unit) = App::si_prefix(self.net_info.net_out); 
             self.net_out_str = format!("Current Outgoing Network Traffic: {} {}/s", (self.net_info.net_out) / scalar, unit);    
+        }
+        #[cfg(feature = "gpu-monitor")]
+        //GPU Usage Parsing 
+        {
+            println!("What up");
+            println!("Waz up");
         }
     }
 
