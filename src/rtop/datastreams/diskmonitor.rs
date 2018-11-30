@@ -1,9 +1,8 @@
 extern crate sysinfo;
 
 use std::str;
-use std::collections::HashMap;
-use self::sysinfo::{Pid, Disk, Processor, Process, System, ProcessExt,
-                    SystemExt, DiskExt, ProcessorExt, NetworkExt, AsU32};
+use self::sysinfo::{Disk, System, ProcessExt,
+                    SystemExt, DiskExt};
 
 use rtop::datastreams::datastream::SysDataStream;
 

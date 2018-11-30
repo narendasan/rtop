@@ -25,10 +25,11 @@ use tui::backend::MouseBackend;
 use rtop::app::App;
 use rtop::cmd::Cmd;
 use rtop::event::Event;
+use rtop::error::Error;
 use rtop::ui::renderer::render::render;
 
 fn main() {
-    ::std::process::exit(match _main() {
+    exit(match _main() {
        Ok(_) => 0,
        Err(err) => {
            eprintln!("error: {:?}", err);
@@ -37,7 +38,7 @@ fn main() {
     });
 }
 
-fn _main() -> Result<(), String> {
+fn _main() -> Result<(), Error> {
     stderrlog::new().module(module_path!())
                     .verbosity(4)
                     .init()
@@ -46,6 +47,8 @@ fn _main() -> Result<(), String> {
     info!("Start");
     //Program
     let mut app = App::new(150)?;
+    #[cfg(feature = "gpu-monitor")]
+    app.init()?;
     let (tx, rx) = mpsc::channel();
     let input_tx = tx.clone();
 
@@ -96,7 +99,7 @@ fn _main() -> Result<(), String> {
                 },
 
                 Event::Tick => {
-                    app.update();
+                    app.update()?;
                 } 
             }
         }

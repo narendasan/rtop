@@ -5,8 +5,7 @@ use rtop::ui::renderer::*;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
-use tui::widgets::{Block, Borders, Row, Table, Tabs, Widget};
-use tui::widgets::canvas::{Canvas, Line, Map, MapResolution};
+use tui::widgets::{Block, Borders, Tabs, Widget};
 use tui::layout::{Direction, Group, Rect, Size};
 use tui::style::{Color, Style};
 
@@ -26,7 +25,7 @@ pub fn render(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) -> Result<
                 _ => {}
             };
         });
-    try!(t.draw());
+    t.draw()?;
     Ok(())
 }
 

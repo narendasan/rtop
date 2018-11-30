@@ -3,10 +3,8 @@ use rtop::ui::panels::cpu::*;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
-use tui::widgets::{Block, Borders, Row, Table, Tabs, Widget};
-use tui::widgets::canvas::{Canvas, Line, Map, MapResolution};
+use tui::widgets::Widget;
 use tui::layout::{Direction, Group, Rect, Size};
-use tui::style::{Color, Style};
 
 pub fn render_cpu_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
       Group::default()

@@ -2,13 +2,13 @@ use rtop::app::App;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
-use tui::widgets::{Axis, Block, BarChart, Borders, Chart, Dataset, Marker, Widget};
+use tui::widgets::{Block, BarChart, Borders, Widget};
 use tui::layout::{Group, Direction, Rect, Size};
 use tui::style::{Color, Modifier, Style};
 
 pub fn disk_usage_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     let num_drives = app.disk_info.disk_usage.len() as u16;
-    let gauge_width: u16 = (100 / num_drives);
+    let gauge_width: u16 = 100 / num_drives;
     let sizes = (0..num_drives).map(|_| {Size::Percent(gauge_width)})
                                 .collect::<Vec<Size>>();
 

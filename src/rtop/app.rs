@@ -4,13 +4,13 @@ extern crate nvml_wrapper as nvml;
 
 use std::collections::HashMap;
 
-use tui::style::Color;
 use termion::event::Key;
 use self::sysinfo::{System, SystemExt};
 #[cfg(feature = "gpu-monitor")]
-use self::nvml::{NVML};
+use self::nvml::NVML;
 
 use rtop::cmd::Cmd;
+use rtop::error::Error;
 use rtop::ui::tabs::Tabs;
 use rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor, 
                         CPUMonitor, NetworkMonitor, ProcessMonitor};
@@ -42,7 +42,7 @@ pub struct App<'a> {
 }
 
 impl <'a> App<'a> {
-    pub fn new(history_len: usize) -> Result<Self, String> {
+    pub fn new(history_len: usize) -> Result<Self, Error> {
         Ok(Self {
             selected_proc: 0,
             tabs: Tabs {
@@ -73,8 +73,14 @@ impl <'a> App<'a> {
             process_info: SysDataStream::new(history_len),
             sys_info_src: System::new(),
             #[cfg(feature = "gpu-monitor")]
-            gpu_info_src: (NVML::init().or_else(|err| Err(String::from(err.description()))))?
+            gpu_info_src: NVML::init()?
         })
+    }
+
+    #[cfg(feature = "gpu-monitor")]
+    pub fn init(&mut self) -> Result<(), Error> {
+        self.gpu_info.init(&self.gpu_info_src)?;
+        Ok(())
     }
 
     pub fn input_handler(&mut self, input: Key) -> Option<Cmd>{
@@ -104,7 +110,7 @@ impl <'a> App<'a> {
         return None;
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self) -> Result<(), Error> {
         self.sys_info_src.refresh_all();
         self.disk_info.poll(&self.sys_info_src);
         self.cpu_info.poll(&self.sys_info_src);
@@ -112,7 +118,7 @@ impl <'a> App<'a> {
         self.mem_info.poll(&self.sys_info_src);
         self.process_info.poll(&self.sys_info_src);
         #[cfg(feature = "gpu-monitor")]
-        self.gpu_info.poll(&self.gpu_info_src);
+        self.gpu_info.poll(&self.gpu_info_src)?;
         //CPU History Parsing
         {
             for (name, usage) in &self.cpu_info.cpu_usage_history {
@@ -173,9 +179,11 @@ impl <'a> App<'a> {
         #[cfg(feature = "gpu-monitor")]
         //GPU Usage Parsing 
         {
-            println!("What up");
-            println!("Waz up");
+            for (id, used_mem) in self.gpu_info.memory_usage.iter() {
+                //println!("GPU");
+            } 
         }
+        Ok(())
     }
 
     fn si_prefix(bits: u64) -> (u64, String) {
