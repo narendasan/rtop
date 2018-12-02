@@ -1,18 +1,17 @@
 extern crate sysinfo;
 
 use std::str;
-use std::collections::HashMap;
-use self::sysinfo::{Pid, Disk, Processor, Process, System, ProcessExt,
-                    SystemExt, DiskExt, ProcessorExt, NetworkExt, AsU32};
+use self::sysinfo::{Disk, System, ProcessExt,
+                    SystemExt, DiskExt};
 
-use rtop::datastreams::datastream::DataStream;
+use rtop::datastreams::datastream::SysDataStream;
 
 pub struct DiskMonitor {
     pub disk_usage: Vec<(String, String, u64, u64)>, //Mount, type, used, total 
     max_history_len: usize,
 }
 
-impl DataStream for DiskMonitor {
+impl SysDataStream for DiskMonitor {
     fn new(max_hist_len: usize) -> Self {        
         Self {
             disk_usage: Vec::new(),

@@ -3,7 +3,7 @@ extern crate sysinfo;
 use std::collections::HashMap;
 use self::sysinfo::{System, SystemExt, Processor, ProcessorExt};
 
-use rtop::datastreams::datastream::DataStream;
+use rtop::datastreams::datastream::SysDataStream;
 
 
 pub struct CPUMonitor {
@@ -11,18 +11,16 @@ pub struct CPUMonitor {
     pub cpu_core_info: Vec<(String, f32)>, //Name, Usage
     pub cpu_usage_history: HashMap<String, Vec<f32>>, //Name, Usage
     pub cpu_temp: Option<f32>, 
-    system_info: System,
     max_history_len: usize,
 }
 
-impl DataStream for CPUMonitor {
+impl SysDataStream for CPUMonitor {
     fn new(max_hist_len: usize) -> Self {        
         Self {
             cpu_usage: 0.0,
             cpu_core_info: Vec::new(),
             cpu_usage_history: HashMap::new(),
             cpu_temp: None,
-            system_info: System::new(),
             max_history_len: max_hist_len, 
         }
     }

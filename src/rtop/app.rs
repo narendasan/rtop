@@ -1,29 +1,27 @@
 extern crate sysinfo;
+#[cfg(feature = "gpu-monitor")]
+extern crate nvml_wrapper as nvml;
 
 use std::collections::HashMap;
 
-use tui::style::Color;
 use termion::event::Key;
 use self::sysinfo::{System, SystemExt};
+#[cfg(feature = "gpu-monitor")]
+use self::nvml::NVML;
 
 use rtop::cmd::Cmd;
+use rtop::error::Error;
 use rtop::ui::tabs::Tabs;
-use rtop::datastreams::{DataStream, DiskMonitor, MemoryMonitor, 
+use rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor, 
                         CPUMonitor, NetworkMonitor, ProcessMonitor};
-use rtop::datastreams::servers::Servers;
+#[cfg(feature = "gpu-monitor")]
+use rtop::datastreams::{GPUDataStream, GPUMonitor};
 
 pub struct App<'a> {
-    pub items: Vec<&'a str>,
-    pub events: Vec<(&'a str, &'a str)>,
     pub selected_proc: usize,
     pub tabs: Tabs<'a>,
     pub show_chart: bool,
-    pub progress: u16,
-    pub data4: Vec<(&'a str, u64)>,
     pub window: [f64; 2],
-    pub colors: [Color; 2],
-    pub color_index: usize,
-    pub servers: Servers<'a>,
     pub cpu_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     pub mem_panel_memory: Vec<(f64, f64)>,
     pub mem_usage_str: String,
@@ -33,41 +31,32 @@ pub struct App<'a> {
     pub net_out_str: String,
     pub disk_info: DiskMonitor,
     pub cpu_info: CPUMonitor,
+    #[cfg(feature = "gpu-monitor")]
+    pub gpu_info: GPUMonitor,
     pub net_info: NetworkMonitor,
     pub mem_info: MemoryMonitor,
     pub process_info: ProcessMonitor,
-    pub sys_monitor: System,
+    pub sys_info_src: System,
+    #[cfg(feature = "gpu-monitor")]
+    pub gpu_info_src: NVML,
 }
 
 impl <'a> App<'a> {
-    pub fn new(history_len: usize) -> Self {
-        Self {
-            items: vec![
-            "Item1", "Item2", "Item3", "Item4", 
-            ],
-            events: vec![("Event1", "INFO"),],
+    pub fn new(history_len: usize) -> Result<Self, Error> {
+        Ok(Self {
             selected_proc: 0,
             tabs: Tabs {
-                titles: vec!["Tab0", "Tab1"],
+                titles: { 
+                    if cfg!(feature = "gpu-monitor") { 
+                        vec!["System/OS/CPU", "GPU"]
+                    } else {
+                        vec!["System/OS/CPU"]
+                    }
+                },
                 selection: 0,
             },
             show_chart: true,
-            progress: 0,
-            data4: vec![
-                ("B1", 9),
-                ("B2", 12),
-                ("B3", 5),
-                ("B4", 8),
-                ("B5", 2),
-                ("B6", 4),
-                ("B7", 5),
-                ("B8", 9),
-                ("B9", 14),
-            ],
             window: [0.0, history_len as f64],
-            colors: [Color::Magenta, Color::Red],
-            color_index: 0,
-            servers: Servers::new(),
             cpu_panel_memory: HashMap::new(),
             mem_panel_memory: Vec::new(),
             mem_usage_str: String::new(),
@@ -75,14 +64,25 @@ impl <'a> App<'a> {
             swap_usage_str: String::new(),
             net_in_str: String::new(),
             net_out_str: String::new(),
-            disk_info: DataStream::new(history_len),
-            cpu_info: DataStream::new(history_len),
-            net_info: DataStream::new(history_len),
-            mem_info: DataStream::new(history_len),
-            process_info: DataStream::new(history_len),
-            sys_monitor: System::new(),
-        }
+            disk_info: SysDataStream::new(history_len),
+            cpu_info: SysDataStream::new(history_len),
+            #[cfg(feature = "gpu-monitor")]
+            gpu_info: GPUDataStream::new(history_len),
+            net_info: SysDataStream::new(history_len),
+            mem_info: SysDataStream::new(history_len),
+            process_info: SysDataStream::new(history_len),
+            sys_info_src: System::new(),
+            #[cfg(feature = "gpu-monitor")]
+            gpu_info_src: NVML::init()?
+        })
     }
+
+    #[cfg(feature = "gpu-monitor")]
+    pub fn init(&mut self) -> Result<(), Error> {
+        self.gpu_info.init(&self.gpu_info_src)?;
+        Ok(())
+    }
+
     pub fn input_handler(&mut self, input: Key) -> Option<Cmd>{
         match input {
             Key::Char('q') => {
@@ -110,25 +110,15 @@ impl <'a> App<'a> {
         return None;
     }
 
-    pub fn update(&mut self) {
-        self.progress += 5;
-        if self.progress > 100 {
-            self.progress = 0;
-        }
-        let i = self.data4.pop().unwrap();
-        self.data4.insert(0, i);
-        let i = self.events.pop().unwrap();
-        self.events.insert(0, i);
-        self.color_index += 1;
-        if self.color_index >= self.colors.len() {
-            self.color_index = 0;
-        }
-        self.sys_monitor.refresh_all();
-        self.disk_info.poll(&self.sys_monitor);
-        self.cpu_info.poll(&self.sys_monitor);
-        self.net_info.poll(&self.sys_monitor);
-        self.mem_info.poll(&self.sys_monitor);
-        self.process_info.poll(&self.sys_monitor);
+    pub fn update(&mut self) -> Result<(), Error> {
+        self.sys_info_src.refresh_all();
+        self.disk_info.poll(&self.sys_info_src);
+        self.cpu_info.poll(&self.sys_info_src);
+        self.net_info.poll(&self.sys_info_src);
+        self.mem_info.poll(&self.sys_info_src);
+        self.process_info.poll(&self.sys_info_src);
+        #[cfg(feature = "gpu-monitor")]
+        self.gpu_info.poll(&self.gpu_info_src)?;
         //CPU History Parsing
         {
             for (name, usage) in &self.cpu_info.cpu_usage_history {
@@ -138,18 +128,20 @@ impl <'a> App<'a> {
                                         .collect::<Vec<(f64, f64)>>();
                 let mut core_name = name.clone();
                 let mut core_num = 0;
-                match core_name.parse::<u32>() {
-                    Ok(num) => {core_num = num - 1}, //MacOS 
-                    Err(_) => {  //Linux 
-                        if core_name.contains("cpu") {
-                            let (_,s) = core_name.split_at_mut(3);
-                            match s.parse::<u32>() {
-                                Ok(num) => {core_num = num},
-                                Err(_) => (), 
-                            }
-                        } else {
-                            panic!("Cannot get CPU ID");
+                if cfg!(target_os = "macos") {
+                    match core_name.parse::<u32>() {
+                        Ok(num) => {core_num = num - 1}, //MacOS 
+                        Err(_) => {panic!("Unable to parse CPU ID")}
+                    }
+                } else {
+                    if core_name.contains("cpu") {
+                        let (_,s) = core_name.split_at_mut(3);
+                        match s.parse::<u32>() {
+                            Ok(num) => {core_num = num},
+                            Err(_) => {panic!("Unable to parse CPU ID")}, 
                         }
+                    } else {
+                        panic!("Cannot get CPU ID");
                     }
                 }
                 let core_label = core_num.to_string();
@@ -184,6 +176,14 @@ impl <'a> App<'a> {
             let (scalar, unit) = App::si_prefix(self.net_info.net_out); 
             self.net_out_str = format!("Current Outgoing Network Traffic: {} {}/s", (self.net_info.net_out) / scalar, unit);    
         }
+        #[cfg(feature = "gpu-monitor")]
+        //GPU Usage Parsing 
+        {
+            for (id, used_mem) in self.gpu_info.memory_usage.iter() {
+                //println!("GPU");
+            } 
+        }
+        Ok(())
     }
 
     fn si_prefix(bits: u64) -> (u64, String) {
