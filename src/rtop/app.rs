@@ -64,6 +64,7 @@ impl <'a> App<'a> {
             swap_usage_str: String::new(),
             net_in_str: String::new(),
             net_out_str: String::new(),
+            //Datastream
             disk_info: SysDataStream::new(history_len),
             cpu_info: SysDataStream::new(history_len),
             #[cfg(feature = "gpu-monitor")]
@@ -93,7 +94,7 @@ impl <'a> App<'a> {
                     self.selected_proc -= 1
                 };
             }
-            Key::Down => if self.selected_proc < self.process_info.process_info.len() - 1 {
+            Key::Down => if self.selected_proc < self.process_info.processes.len() - 1 {
                 self.selected_proc += 1;
             },
             Key::Left => {
