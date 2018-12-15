@@ -19,6 +19,7 @@ pub fn render(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) -> Result<
                 0 => {
                     cpu_tab::render_cpu_tab(t, app, &chunks[1]);
                 }
+                #[cfg(feature = "gpu-monitor")]
                 1 => {
                     gpu_tab::render_gpu_tab(t, app, &chunks[1]);
                 }

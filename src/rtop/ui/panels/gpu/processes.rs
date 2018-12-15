@@ -7,7 +7,6 @@ use tui::widgets::{Block, Borders, Row, Table, Widget};
 use tui::layout::Rect;
 use tui::style::{Color, Style};
 
-
 pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     let mut processes_by_gpu = app.gpu_info.processes.clone();
     //processes_by_gpu.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());

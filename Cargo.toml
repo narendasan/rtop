@@ -8,6 +8,7 @@ readme = "README.md"
 keywords = ["system", "monitor", "info"]
 catagories = [""]
 license = "NCSA"
+edition = "2018"
 
 [features]
 gpu-monitor = ["nvml-wrapper"]
