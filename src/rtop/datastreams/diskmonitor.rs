@@ -1,10 +1,8 @@
-extern crate sysinfo;
-
 use std::str;
-use self::sysinfo::{Disk, System, ProcessExt,
-                    SystemExt, DiskExt};
+use sysinfo::{Disk, System, ProcessExt,
+                SystemExt, DiskExt};
 
-use rtop::datastreams::datastream::SysDataStream;
+use crate::rtop::datastreams::datastream::SysDataStream;
 
 pub struct DiskMonitor {
     pub disk_usage: Vec<(String, String, u64, u64)>, //Mount, type, used, total 

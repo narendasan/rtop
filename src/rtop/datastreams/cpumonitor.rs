@@ -1,9 +1,7 @@
-extern crate sysinfo;
-
 use std::collections::HashMap;
-use self::sysinfo::{System, SystemExt, Processor, ProcessorExt};
+use sysinfo::{System, SystemExt, Processor, ProcessorExt};
 
-use rtop::datastreams::datastream::SysDataStream;
+use crate::rtop::datastreams::datastream::SysDataStream;
 
 
 pub struct CPUMonitor {

@@ -1,7 +1,7 @@
 
 use std::io;
-use rtop::app::App;
-use rtop::ui::renderer::*;
+use crate::rtop::app::App;
+use crate::rtop::ui::renderer::*;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;

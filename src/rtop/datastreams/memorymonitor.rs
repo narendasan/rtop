@@ -1,8 +1,6 @@
-extern crate sysinfo;
+use sysinfo::{System, SystemExt};
 
-use self::sysinfo::{System, SystemExt};
-
-use rtop::datastreams::datastream::SysDataStream;
+use crate::rtop::datastreams::datastream::SysDataStream;
 
 pub struct MemoryMonitor {
     pub memory_usage: u64,

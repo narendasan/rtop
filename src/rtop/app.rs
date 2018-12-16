@@ -1,19 +1,15 @@
-extern crate sysinfo;
-#[cfg(feature = "gpu-monitor")]
-extern crate nvml_wrapper as nvml;
-
 use std::collections::HashMap;
-
 use termion::event::Key;
-use self::sysinfo::{System, SystemExt};
+use sysinfo::{System, SystemExt};
 #[cfg(feature = "gpu-monitor")]
-use self::nvml::NVML;
+use nvml::NVML;
 
-use rtop::cmd::Cmd;
-use rtop::error::Error;
-use rtop::ui::tabs::Tabs;
-use rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor, 
-                        CPUMonitor, NetworkMonitor, ProcessMonitor};
+use crate::rtop::cmd::Cmd;
+use crate::rtop::error::Error;
+use crate::rtop::ui::tabs::Tabs;
+use crate::rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor, 
+                            CPUMonitor, NetworkMonitor, ProcessMonitor};
+
 #[cfg(feature = "gpu-monitor")]
 use rtop::datastreams::{GPUDataStream, GPUMonitor};
 

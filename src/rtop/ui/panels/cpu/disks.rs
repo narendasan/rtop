@@ -1,4 +1,4 @@
-use rtop::app::App;
+use crate::rtop::app::App;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;

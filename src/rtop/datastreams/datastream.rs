@@ -1,12 +1,8 @@
-extern crate sysinfo;
+use sysinfo::System;
 #[cfg(feature = "gpu-monitor")]
-extern crate nvml_wrapper as nvml;
+use nvml::NVML;
 
-use self::sysinfo::System;
-#[cfg(feature = "gpu-monitor")]
-use self::nvml::NVML;
-
-use rtop::error::Error;
+use crate::rtop::error::Error;
 
 
 pub trait SysDataStream {

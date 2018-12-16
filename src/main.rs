@@ -1,14 +1,4 @@
-//#![feature(nll)]
-#[macro_use]
-extern crate log;
-extern crate stderrlog;
-extern crate termion;
-extern crate tui;
-extern crate sysinfo;
-#[cfg(feature = "gpu-monitor")]
-extern crate nvml_wrapper as nvml;
-
-mod rtop;
+#[macro_use] extern crate log;
 
 use std::io;
 use std::thread;
@@ -22,11 +12,13 @@ use termion::input::TermRead;
 use tui::Terminal;
 use tui::backend::MouseBackend;
 
-use rtop::app::App;
-use rtop::cmd::Cmd;
-use rtop::event::Event;
-use rtop::error::Error;
-use rtop::ui::renderer::render::render;
+mod rtop;
+
+use crate::rtop::app::App;
+use crate::rtop::cmd::Cmd;
+use crate::rtop::event::Event;
+use crate::rtop::error::Error;
+use crate::rtop::ui::renderer::render;
 
 fn main() {
     exit(match _main() {

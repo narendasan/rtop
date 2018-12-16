@@ -1,7 +1,5 @@
-extern crate sysinfo;
-
-use self::sysinfo::{Pid, AsU32, Process, System, ProcessExt, SystemExt};
-use rtop::datastreams::datastream::SysDataStream;
+use sysinfo::{Pid, AsU32, Process, System, ProcessExt, SystemExt};
+use crate::rtop::datastreams::datastream::SysDataStream;
 
 pub struct ProcessMonitor {
     pub processes: Vec<(u32, String, f32, u64)>, //PID, Command, CPU. mem (kb)

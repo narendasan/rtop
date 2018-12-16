@@ -1,8 +1,5 @@
-extern crate sysinfo;
-
-use self::sysinfo::{System, SystemExt, NetworkExt};
-
-use rtop::datastreams::datastream::SysDataStream;
+use sysinfo::{System, SystemExt, NetworkExt};
+use crate::rtop::datastreams::datastream::SysDataStream;
 
 
 pub struct NetworkMonitor {

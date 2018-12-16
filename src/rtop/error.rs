@@ -1,9 +1,7 @@
-#[cfg(feature = "gpu-monitor")]
-extern crate nvml_wrapper as nvml;
-
 use std::io;
 use std::error;
 use std::fmt;
+
 #[cfg(feature = "gpu-monitor")]
 use nvml::error::Error as nvmlError; 
 

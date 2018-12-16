@@ -1,6 +1,3 @@
-extern crate nvml_wrapper as nvml;
-extern crate sysinfo;
-
 use std::collections::HashMap;
 
 use sysinfo::{System, SystemExt, Pid, AsU32, Process, ProcessExt};
@@ -10,8 +7,8 @@ use nvml::enum_wrappers::device::{TemperatureSensor, Clock, ClockId};
 use nvml::enums::device::UsedGpuMemory;
 use nvml::struct_wrappers::device::ProcessInfo;
 
-use rtop::error::Error;
-use rtop::datastreams::datastream::GPUDataStream;
+use crate::rtop::error::Error;
+use crate::rtop::datastreams::datastream::GPUDataStream;
 
 #[derive(Debug, Clone)]
 pub struct GPUClks {
