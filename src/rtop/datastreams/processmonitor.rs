@@ -7,7 +7,7 @@ pub struct ProcessMonitor {
 }
 
 impl SysDataStream for ProcessMonitor {
-    fn new(max_hist_len: usize) -> Self {        
+    fn new(max_hist_len: usize, inter_len: u16) -> Self {        
         Self {
             processes: Vec::new(),
             max_history_len: max_hist_len,

@@ -12,7 +12,7 @@ pub struct NetworkMonitor {
 }
 
 impl SysDataStream for NetworkMonitor {
-    fn new(max_hist_len: usize) -> Self {        
+    fn new(max_hist_len: usize, inter_len: u16) -> Self {        
         Self {
             net_in_history: Vec::new(),
             net_out_history: Vec::new(), 

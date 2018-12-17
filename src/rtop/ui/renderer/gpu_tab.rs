@@ -1,6 +1,6 @@
 
-use rtop::app::App;
-use rtop::ui::panels::gpu::*;
+use crate::rtop::app::App;
+use crate::rtop::ui::panels::gpu::*;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;

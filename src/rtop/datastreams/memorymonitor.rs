@@ -1,6 +1,6 @@
 use sysinfo::{System, SystemExt};
 
-use crate::rtop::datastreams::datastream::SysDataStream;
+use crate::rtop::datastreams::{datastream::SysDataStream, utils};
 
 pub struct MemoryMonitor {
     pub memory_usage: u64,
@@ -10,10 +10,11 @@ pub struct MemoryMonitor {
     pub swap_usage_history: Vec<f64>,
     pub total_swap: u64,
     max_history_len: usize,
+    interpolation_len: u16
 }
 
 impl SysDataStream for MemoryMonitor {
-    fn new(max_hist_len: usize) -> Self {        
+    fn new(max_hist_len: usize, inter_len: u16) -> Self {        
         Self {
             memory_usage: 0,
             total_memory: 10,
@@ -22,6 +23,7 @@ impl SysDataStream for MemoryMonitor {
             total_swap: 10,
             swap_usage_history: vec![0.0; max_hist_len],
             max_history_len: max_hist_len,
+            interpolation_len: inter_len
         }
     }
 
@@ -37,11 +39,20 @@ impl SysDataStream for MemoryMonitor {
         while self.memory_usage_history.len() >= self.max_history_len {
             self.memory_usage_history.remove(0);
         }
-        self.memory_usage_history.push(self.memory_usage as f64 / self.total_memory as f64);
+        let last_mem = match self.memory_usage_history.last() {
+            Some(l) => l.clone(),
+            None => 0.0,
+        };
+        self.memory_usage_history.extend_from_slice(utils::interpolate(last_mem, self.memory_usage as f64 / self.total_memory as f64, self.interpolation_len).as_slice());
 
         while self.swap_usage_history.len() >= self.max_history_len {
             self.swap_usage_history.remove(0);
         }
+        let last_swap = match self.swap_usage_history.last() {
+            Some(l) => l.clone(),
+            None => 0.0,
+        };
         self.swap_usage_history.push(self.swap_usage as f64 / self.total_swap as f64);
+        self.swap_usage_history.extend_from_slice(utils::interpolate(last_swap, self.swap_usage as f64 / self.total_swap as f64, self.interpolation_len).as_slice());
     }
 }

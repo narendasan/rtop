@@ -36,7 +36,7 @@ pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
 fn bytes_to_mb(mem: Option<u64>) -> String {
     match mem {
         Some(m) => {
-            format!("{:.0}", (m / 1000000)) 
+            format!("{:.0} MB", (m / 1000000)) 
         }, 
         None => {
             "UNKNOWN".to_string()

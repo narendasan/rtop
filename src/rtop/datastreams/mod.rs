@@ -6,6 +6,7 @@ mod gpumonitor;
 mod networkmonitor;
 mod memorymonitor;
 mod processmonitor;
+mod utils;
 
 pub use self::datastream::SysDataStream as SysDataStream;
 #[cfg(feature = "gpu-monitor")]

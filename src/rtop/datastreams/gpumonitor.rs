@@ -2,10 +2,12 @@ use std::collections::HashMap;
 
 use sysinfo::{System, SystemExt, Pid, AsU32, Process, ProcessExt};
 
-use nvml::{NVML, Device};
-use nvml::enum_wrappers::device::{TemperatureSensor, Clock, ClockId};
-use nvml::enums::device::UsedGpuMemory;
-use nvml::struct_wrappers::device::ProcessInfo;
+extern crate nvml_wrapper as nvml;
+//use nvml_wrapper as nvml;
+use self::nvml::{NVML, Device};
+use self::nvml::enum_wrappers::device::{TemperatureSensor, Clock, ClockId};
+use self::nvml::enums::device::UsedGpuMemory;
+use self::nvml::struct_wrappers::device::ProcessInfo;
 
 use crate::rtop::error::Error;
 use crate::rtop::datastreams::datastream::GPUDataStream;

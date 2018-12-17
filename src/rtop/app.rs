@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use termion::event::Key;
 use sysinfo::{System, SystemExt};
-#[cfg(feature = "gpu-monitor")]
-use nvml::NVML;
+#[cfg(feature = "gpu-monitor")] use nvml_wrapper::NVML;
+#[cfg(feature = "gpu-monitor")] use nvml_wrapper::error::Error as nvmlError;
 
 use crate::rtop::cmd::Cmd;
 use crate::rtop::error::Error;
@@ -10,8 +10,7 @@ use crate::rtop::ui::tabs::Tabs;
 use crate::rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor, 
                             CPUMonitor, NetworkMonitor, ProcessMonitor};
 
-#[cfg(feature = "gpu-monitor")]
-use rtop::datastreams::{GPUDataStream, GPUMonitor};
+#[cfg(feature = "gpu-monitor")] use crate::rtop::datastreams::{GPUDataStream, GPUMonitor};
 
 pub struct App<'a> {
     pub selected_proc: usize,
@@ -38,7 +37,7 @@ pub struct App<'a> {
 }
 
 impl <'a> App<'a> {
-    pub fn new(history_len: usize) -> Result<Self, Error> {
+    pub fn new(history_len: usize, interpolation_len: u16) -> Result<Self, Error> {
         Ok(Self {
             selected_proc: 0,
             tabs: Tabs {
@@ -61,13 +60,13 @@ impl <'a> App<'a> {
             net_in_str: String::new(),
             net_out_str: String::new(),
             //Datastream
-            disk_info: SysDataStream::new(history_len),
-            cpu_info: SysDataStream::new(history_len),
+            disk_info: SysDataStream::new(history_len, interpolation_len),
+            cpu_info: SysDataStream::new(history_len, interpolation_len),
             #[cfg(feature = "gpu-monitor")]
-            gpu_info: GPUDataStream::new(history_len),
-            net_info: SysDataStream::new(history_len),
-            mem_info: SysDataStream::new(history_len),
-            process_info: SysDataStream::new(history_len),
+            gpu_info: GPUDataStream::new(history_len, interpolation_len),
+            net_info: SysDataStream::new(history_len, interpolation_len),
+            mem_info: SysDataStream::new(history_len, interpolation_len),
+            process_info: SysDataStream::new(history_len, interpolation_len),
             sys_info_src: System::new(),
             #[cfg(feature = "gpu-monitor")]
             gpu_info_src: NVML::init()?

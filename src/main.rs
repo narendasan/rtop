@@ -38,7 +38,7 @@ fn _main() -> Result<(), Error> {
 
     info!("Start");
     //Program
-    let mut app = App::new(150)?;
+    let mut app = App::new(5000, 50)?;
     #[cfg(feature = "gpu-monitor")]
     app.init()?;
     let (tx, rx) = mpsc::channel();
@@ -59,7 +59,7 @@ fn _main() -> Result<(), Error> {
         let tx = tx.clone();
         loop {
             tx.send(Event::Tick).unwrap();
-            thread::sleep(time::Duration::from_millis(5000));
+            thread::sleep(time::Duration::from_millis(1000));
         }
     });
 
@@ -68,7 +68,8 @@ fn _main() -> Result<(), Error> {
     let mut term_size = terminal.size().unwrap();
     terminal.clear().unwrap();
     terminal.hide_cursor().unwrap();
-
+    let mut clk_split = 0;
+    
     loop {
         let size = terminal.size().unwrap();
         if size != term_size {
@@ -89,12 +90,14 @@ fn _main() -> Result<(), Error> {
                         None => (),
                     }
                 },
-
                 Event::Tick => {
-                    app.update()?;
+                    if clk_split % 1 == 0 {
+                        app.update()?;
+                    }
                 } 
             }
         }
+
         render(&mut terminal, &app, &term_size).unwrap();
     }
     terminal.show_cursor().unwrap();

@@ -10,7 +10,7 @@ pub struct DiskMonitor {
 }
 
 impl SysDataStream for DiskMonitor {
-    fn new(max_hist_len: usize) -> Self {        
+    fn new(max_hist_len: usize, inter_len: u16) -> Self {        
         Self {
             disk_usage: Vec::new(),
             max_history_len: max_hist_len,

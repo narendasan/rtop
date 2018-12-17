@@ -2,8 +2,7 @@ use std::io;
 use std::error;
 use std::fmt;
 
-#[cfg(feature = "gpu-monitor")]
-use nvml::error::Error as nvmlError; 
+#[cfg(feature = "gpu-monitor")] use nvml_wrapper::error::Error as nvmlError; 
 
 #[derive(Debug)]
 pub enum Error {
