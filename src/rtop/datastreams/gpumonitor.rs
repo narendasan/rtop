@@ -10,7 +10,7 @@ use self::nvml::enums::device::UsedGpuMemory;
 use self::nvml::struct_wrappers::device::ProcessInfo;
 
 use crate::rtop::error::Error;
-use crate::rtop::datastreams::datastream::GPUDataStream;
+use crate::rtop::datastreams::{datastream::GPUDataStream, utils};
 
 #[derive(Debug, Clone)]
 pub struct GPUClks {
@@ -112,7 +112,7 @@ pub struct GPUMonitor {
     pub temps: HashMap<u32, u32>, //Device ID, Temps
     pub temp_history: HashMap<u32, Vec<u32>>, //Device ID, Temps
     pub memory_usage: HashMap<u32, u64>,
-    pub memory_usage_history: HashMap<u32, Vec<u64>>, //Device ID, mem (GB) 
+    pub memory_usage_history: HashMap<u32, Vec<f64>>, //Device ID, mem (GB) 
     pub total_memory: HashMap<u32, u64>,
     pub nvml_indices: HashMap<u32, u32>,
     pub clks: HashMap<u32, GPUClks>,
@@ -121,11 +121,12 @@ pub struct GPUMonitor {
     pub power_usage: HashMap<u32, u32>,
     pub power_usage_history: HashMap<u32, Vec<u32>>,
     pub processes: Vec<GPUProcess>, //Device ID, (PID, Mem usage) 
+    interpolation_len: u16,
     max_history_len: usize,
 }
 
 impl GPUDataStream for GPUMonitor {
-    fn new(max_hist_len: usize) -> Self {        
+    fn new(max_hist_len: usize, inter_len: u16) -> Self {        
         Self {
             driver_version: "UNKNOWN".to_string(),
             total_memory: HashMap::new(),
@@ -140,6 +141,7 @@ impl GPUDataStream for GPUMonitor {
             power_usage: HashMap::new(),
             power_usage_history: HashMap::new(),
             processes: vec![], 
+            interpolation_len: inter_len, 
             max_history_len: max_hist_len
         }
     }
@@ -177,15 +179,23 @@ impl GPUDataStream for GPUMonitor {
             while temp_history.len() >= self.max_history_len {
                 temp_history.remove(0);
             }
-            temp_history.push(gpu_temp);
+            let last_temp = match temp_history.last() {
+                Some(l) => l.clone(),
+                None => 0,
+            };
+            temp_history.extend_from_slice(utils::interpolate(last_temp, gpu_temp as u32, self.interpolation_len).as_slice());
 
             let mem_usage = gpu.memory_info()?.used;
             self.memory_usage.insert(*id, mem_usage);
-            let mem_usage_history = self.memory_usage_history.entry(*id).or_insert(vec![0; self.max_history_len]);
+            let mem_usage_history = self.memory_usage_history.entry(*id).or_insert(vec![0.0; self.max_history_len]);
             while mem_usage_history.len() >= self.max_history_len {
                 mem_usage_history.remove(0);
             }
-            mem_usage_history.push(mem_usage);
+            let last_mem = match mem_usage_history.last() {
+                Some(l) => l.clone(),
+                None => 0.0,
+            };
+            mem_usage_history.extend_from_slice(utils::interpolate(last_mem, mem_usage as f64 / *self.total_memory.get(&*id).unwrap() as f64, self.interpolation_len).as_slice());
  
             let clk = GPUClks::new(Some(gpu))?; 
             self.clks.insert(*id, clk.clone());

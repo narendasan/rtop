@@ -20,13 +20,17 @@ pub struct App<'a> {
     pub cpu_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     pub mem_panel_memory: Vec<(f64, f64)>,
     pub mem_usage_str: String,
+    #[cfg(feature = "gpu-monitor")] 
+    pub gpu_mem_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
+    #[cfg(feature = "gpu-monitor")] 
+    pub gpu_temp_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     pub swap_panel_memory: Vec<(f64, f64)>,
     pub swap_usage_str: String,
     pub net_in_str: String,
     pub net_out_str: String,
     pub disk_info: DiskMonitor,
     pub cpu_info: CPUMonitor,
-    #[cfg(feature = "gpu-monitor")]
+    #[cfg(feature = "gpu-monitor")] 
     pub gpu_info: GPUMonitor,
     pub net_info: NetworkMonitor,
     pub mem_info: MemoryMonitor,
@@ -57,6 +61,10 @@ impl <'a> App<'a> {
             mem_usage_str: String::new(),
             swap_panel_memory: Vec::new(),
             swap_usage_str: String::new(),
+            #[cfg(feature = "gpu-monitor")]
+            gpu_mem_panel_memory: HashMap::new(),
+            #[cfg(feature = "gpu-monitor")] 
+            gpu_temp_panel_memory: HashMap::new(),
             net_in_str: String::new(),
             net_out_str: String::new(),
             //Datastream
@@ -166,35 +174,51 @@ impl <'a> App<'a> {
         {
             
             let (scalar, unit) = App::si_prefix(self.net_info.net_in); 
-            self.net_in_str = format!("Current Incoming Traffic: {} {}/s", (self.net_info.net_in) / scalar, unit);
+            self.net_in_str = format!("Current Incoming Traffic: {} {}b/s", (self.net_info.net_in) / scalar, unit);
 
 
             let (scalar, unit) = App::si_prefix(self.net_info.net_out); 
-            self.net_out_str = format!("Current Outgoing Network Traffic: {} {}/s", (self.net_info.net_out) / scalar, unit);    
+            self.net_out_str = format!("Current Outgoing Network Traffic: {} {}b/s", (self.net_info.net_out) / scalar, unit);    
         }
         #[cfg(feature = "gpu-monitor")]
         //GPU Usage Parsing 
         {
-            for (id, used_mem) in self.gpu_info.memory_usage.iter() {
-                //println!("GPU");
+            for (id, used_mem) in self.gpu_info.memory_usage_history.iter() {
+                let pairwise_data = used_mem.iter()
+                                            .enumerate()
+                                            .map(|x| (x.0 as f64, x.1.clone() as f64))
+                                            .collect::<Vec<(f64, f64)>>();
+                let (scalar, unit) = App::si_prefix(*self.gpu_info.memory_usage.get(id).unwrap() as u64);
+                let device_name = format!("GPU {} ({:.2}{}B)", id, *self.gpu_info.memory_usage.get(id).unwrap() as f64 / scalar as f64, unit);
+                self.gpu_mem_panel_memory.insert(*id, (device_name, pairwise_data));
+            } 
+
+
+            for (id, temps) in self.gpu_info.temp_history.iter() {
+                let pairwise_data = temps.iter()
+                                         .enumerate()
+                                         .map(|x| (x.0 as f64, x.1.clone() as f64))
+                                         .collect::<Vec<(f64, f64)>>();
+                let device_name = format!("GPU {} ({:.0}°C)", id, *self.gpu_info.temps.get(id).unwrap() as f64);
+                self.gpu_temp_panel_memory.insert(*id, (device_name, pairwise_data));
             } 
         }
         Ok(())
     }
 
-    fn si_prefix(bits: u64) -> (u64, String) {
-        let b = bits as f64;
-        if b == 0.0 {
-            return (1 as u64, String::from("B"));
+    fn si_prefix(num: u64) -> (u64, String) {
+        let n = num as f64;
+        if n == 0.0 {
+            return (1 as u64, String::from(""));
         }
-        match b.log(10.0) as u64 {
-            0 | 1 | 2 => ((10 as u64).pow(0), String::from("b")),
-            3 | 4 | 5 => ((10 as u64).pow(3), String::from("Kb")),
-            6 | 7 | 8 => ((10 as u64).pow(6), String::from("Mb")),
-            9 | 10 | 11 => ((10 as u64).pow(9), String::from("Gb")),
-            12 | 13 | 14 => ((10 as u64).pow(12), String::from("Tb")),
-            15 | 16 | 17 => ((10 as u64).pow(15), String::from("Pb")),
-            _ => ((10 as u64).pow(18), String::from("Eb")),
+        match n.log(10.0) as u64 {
+            0 | 1 | 2 => ((10 as u64).pow(0), String::from("")),
+            3 | 4 | 5 => ((10 as u64).pow(3), String::from("K")),
+            6 | 7 | 8 => ((10 as u64).pow(6), String::from("M")),
+            9 | 10 | 11 => ((10 as u64).pow(9), String::from("G")),
+            12 | 13 | 14 => ((10 as u64).pow(12), String::from("T")),
+            15 | 16 | 17 => ((10 as u64).pow(15), String::from("P")),
+            _ => ((10 as u64).pow(18), String::from("E")),
         }
     }
 }

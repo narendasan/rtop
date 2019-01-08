@@ -37,6 +37,8 @@ fn _main() -> Result<(), Error> {
                     .unwrap();
 
     info!("Start");
+    #[cfg(feature = "gpu-monitor")]
+    info!("GPU Monitoring Enable");
     //Program
     let mut app = App::new(5000, 50)?;
     #[cfg(feature = "gpu-monitor")]
