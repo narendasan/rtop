@@ -54,6 +54,7 @@ fn render_bottom_left_corner(t: &mut Terminal<MouseBackend>, app: &App, area: &R
         .direction(Direction::Vertical)
         .sizes(&[Size::Percent(25), Size::Percent(75)])
         .render(t, area, |t, chunks| {
+            #[cfg(feature = "battery-monitor")]
             battery_panel(t, app, &chunks[0]);
             network_info_panel(t, app, &chunks[1]);
         });

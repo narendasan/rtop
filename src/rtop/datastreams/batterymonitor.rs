@@ -86,7 +86,7 @@ impl BatteryDataStream for BatteryMonitor {
                 Some(count) => count.to_string(), 
                 None => "Unknown".to_string(),
             };
-            self.health = battery.state_of_charge().get::<percent>() as f32;
+            self.health = battery.state_of_health().get::<percent>() as f32;
             self.temp = match battery.temperature() {
                 Some(temp) => format!("{:.2}°C", temp.get::<degree_celsius>() as f32), 
                 None => "Unknown".to_string(),

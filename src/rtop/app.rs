@@ -101,7 +101,7 @@ impl <'a> App<'a> {
     }
 
     pub fn update(&mut self) -> Result<(), Error> {
-        self.datastreams.update();
+        self.datastreams.update()?;
         //CPU History Parsing
         {
             for (name, usage) in &self.datastreams.cpu_info.cpu_usage_history {
