@@ -9,6 +9,7 @@ pub struct CPUMonitor {
     pub cpu_core_info: Vec<(String, f32)>, //Name, Usage
     pub cpu_usage_history: HashMap<String, Vec<f32>>, //Name, Usage
     pub cpu_temp: Option<f32>, 
+    //pub cpu_temp_history: HashMap<String, Vec<f32>>,
     max_history_len: usize,
     interpolation_len: u16,
 }
