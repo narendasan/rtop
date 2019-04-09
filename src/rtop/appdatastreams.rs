@@ -53,6 +53,12 @@ impl <'a> AppDataStreams {
         })
     }
 
+    #[cfg(feature = "gpu-monitor")]
+    pub fn init(&mut self) -> Result<(), Error> {
+        self.datastreams.gpu_info.init(&self.gpu_info_src)?;
+        Ok(())
+    }
+
     pub fn update(&mut self) -> Result<(), Error> {
         self.sys_info_src.refresh_all();
         self.disk_info.poll(&self.sys_info_src);
