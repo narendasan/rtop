@@ -55,7 +55,7 @@ impl <'a> AppDataStreams {
 
     #[cfg(feature = "gpu-monitor")]
     pub fn init(&mut self) -> Result<(), Error> {
-        self.datastreams.gpu_info.init(&self.gpu_info_src)?;
+        self.gpu_info.init(&self.gpu_info_src)?;
         Ok(())
     }
 
