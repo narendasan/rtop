@@ -72,7 +72,7 @@ impl <'a> App<'a> {
 
     #[cfg(feature = "gpu-monitor")]
     pub fn init(&mut self) -> Result<(), Error> {
-        self.gpu_info.init(&self.gpu_info_src)?;
+        self.datastreams.gpu_info.init(&self.datastreams.gpu_info_src)?;
         Ok(())
     }
 
@@ -195,7 +195,7 @@ impl <'a> App<'a> {
                                             .enumerate()
                                             .map(|x| (x.0 as f64, x.1.clone() as f64))
                                             .collect::<Vec<(f64, f64)>>();
-                let (scalar, unit) = App::si_prefix(*self.gpu_info.memory_usage.get(id).unwrap() as u64);
+                let (scalar, unit) = App::si_prefix(*self.datastreams.gpu_info.memory_usage.get(id).unwrap() as u64);
                 let device_name = format!("GPU {} ({:.2}{}B)", id, *self.datastreams.gpu_info.memory_usage.get(id).unwrap() as f64 / scalar as f64, unit);
                 self.gpu_mem_panel_memory.insert(*id, (device_name, pairwise_data));
             } 
