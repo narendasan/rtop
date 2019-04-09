@@ -21,10 +21,6 @@ pub struct App<'a> {
     pub cpu_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     pub mem_panel_memory: Vec<(f64, f64)>,
     pub mem_usage_str: String,
-    #[cfg(feature = "gpu-monitor")] 
-    pub gpu_mem_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
-    #[cfg(feature = "gpu-monitor")] 
-    pub gpu_temp_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     pub swap_panel_memory: Vec<(f64, f64)>,
     pub swap_usage_str: String,
     pub net_in_str: String,
@@ -33,6 +29,12 @@ pub struct App<'a> {
     pub battery_level: f32,
     #[cfg(feature = "battery-monitor")]
     pub battery_status: String, 
+    #[cfg(feature = "gpu-monitor")] 
+    pub gpu_mem_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
+    #[cfg(feature = "gpu-monitor")] 
+    pub gpu_temp_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
+    #[cfg(feature = "gpu-monitor")] 
+    pub selected_gpu_proc: usize,
     pub datastreams: AppDataStreams
 }
 
@@ -56,16 +58,18 @@ impl <'a> App<'a> {
             mem_usage_str: String::new(),
             swap_panel_memory: Vec::new(),
             swap_usage_str: String::new(),
-            #[cfg(feature = "gpu-monitor")]
-            gpu_mem_panel_memory: HashMap::new(),
-            #[cfg(feature = "gpu-monitor")] 
-            gpu_temp_panel_memory: HashMap::new(),
             net_in_str: String::new(),
             net_out_str: String::new(),
             #[cfg(feature = "battery-monitor")]
             battery_level: 100.0,
             #[cfg(feature = "battery-monitor")]
-            battery_status: String::new(), 
+            battery_status: String::new(),
+            #[cfg(feature = "gpu-monitor")]
+            gpu_mem_panel_memory: HashMap::new(),
+            #[cfg(feature = "gpu-monitor")] 
+            gpu_temp_panel_memory: HashMap::new(),
+            #[cfg(feature = "gpu-monitor")] 
+            selected_gpu_proc: 0, 
             datastreams: AppDataStreams::new(history_len, interpolation_len)?
         })
     }
@@ -82,12 +86,32 @@ impl <'a> App<'a> {
                 return Some(Cmd::Quit);
             }
             Key::Up => {
-                if self.selected_proc > 0 {
-                    self.selected_proc -= 1
+                if cfg!(feature = "gpu-monitor") {
+                    #[cfg(feature = "gpu-monitor")]
+                    {
+                        if self.tabs.selection == 1 && self.selected_gpu_proc > 0 {
+                            self.selected_gpu_proc -= 1
+                        }
+                    }
+                } else {
+                    if self.selected_proc > 0 {
+                        self.selected_proc -= 1
+                    }
                 };
             }
-            Key::Down => if self.selected_proc < self.datastreams.process_info.processes.len() - 1 {
-                self.selected_proc += 1;
+            Key::Down => {
+                if cfg!(feature = "gpu-monitor") {
+                    #[cfg(feature = "gpu-monitor")]
+                    {
+                        if self.tabs.selection == 1 && self.selected_gpu_proc < self.datastreams.gpu_info.processes.len() - 1 {
+                            self.selected_gpu_proc -= 1
+                        }
+                    }
+                } else {
+                    if self.selected_proc < self.datastreams.process_info.processes.len() - 1 {
+                        self.selected_proc += 1;
+                    }
+                }
             },
             Key::Left => {
                 self.tabs.previous();
