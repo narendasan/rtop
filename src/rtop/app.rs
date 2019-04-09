@@ -1,21 +1,22 @@
 use std::collections::HashMap;
 use termion::event::Key;
-use sysinfo::{System, SystemExt};
-#[cfg(feature = "gpu-monitor")] use nvml_wrapper::NVML;
-#[cfg(feature = "gpu-monitor")] use nvml_wrapper::error::Error as nvmlError;
+use sysinfo::SystemExt;
+#[cfg(feature = "gpu-monitor")]
+use nvml_wrapper::NVML;
+#[cfg(feature = "gpu-monitor")] 
+use nvml_wrapper::error::Error as nvmlError;
 
 use crate::rtop::cmd::Cmd;
 use crate::rtop::error::Error;
 use crate::rtop::ui::tabs::Tabs;
-use crate::rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor, 
-                            CPUMonitor, NetworkMonitor, ProcessMonitor};
+#[cfg(feature = "battery-monitor")]
+use crate::rtop::datastreams::ChargingStatus;
+use crate::rtop::appdatastreams::AppDataStreams;
 
-#[cfg(feature = "gpu-monitor")] use crate::rtop::datastreams::{GPUDataStream, GPUMonitor};
 
 pub struct App<'a> {
     pub selected_proc: usize,
     pub tabs: Tabs<'a>,
-    pub show_chart: bool,
     pub window: [f64; 2],
     pub cpu_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     pub mem_panel_memory: Vec<(f64, f64)>,
@@ -28,16 +29,11 @@ pub struct App<'a> {
     pub swap_usage_str: String,
     pub net_in_str: String,
     pub net_out_str: String,
-    pub disk_info: DiskMonitor,
-    pub cpu_info: CPUMonitor,
-    #[cfg(feature = "gpu-monitor")] 
-    pub gpu_info: GPUMonitor,
-    pub net_info: NetworkMonitor,
-    pub mem_info: MemoryMonitor,
-    pub process_info: ProcessMonitor,
-    pub sys_info_src: System,
-    #[cfg(feature = "gpu-monitor")]
-    pub gpu_info_src: NVML,
+    #[cfg(feature = "battery-monitor")]
+    pub battery_level: f32,
+    #[cfg(feature = "battery-monitor")]
+    pub battery_status: String, 
+    pub datastreams: AppDataStreams
 }
 
 impl <'a> App<'a> {
@@ -47,14 +43,13 @@ impl <'a> App<'a> {
             tabs: Tabs {
                 titles: { 
                     if cfg!(feature = "gpu-monitor") { 
-                        vec!["System/OS/CPU", "GPU"]
+                        vec!["System/OS/CPU", "gpu-monitor"]
                     } else {
                         vec!["System/OS/CPU"]
                     }
                 },
                 selection: 0,
             },
-            show_chart: true,
             window: [0.0, history_len as f64],
             cpu_panel_memory: HashMap::new(),
             mem_panel_memory: Vec::new(),
@@ -67,17 +62,11 @@ impl <'a> App<'a> {
             gpu_temp_panel_memory: HashMap::new(),
             net_in_str: String::new(),
             net_out_str: String::new(),
-            //Datastream
-            disk_info: SysDataStream::new(history_len, interpolation_len),
-            cpu_info: SysDataStream::new(history_len, interpolation_len),
-            #[cfg(feature = "gpu-monitor")]
-            gpu_info: GPUDataStream::new(history_len, interpolation_len),
-            net_info: SysDataStream::new(history_len, interpolation_len),
-            mem_info: SysDataStream::new(history_len, interpolation_len),
-            process_info: SysDataStream::new(history_len, interpolation_len),
-            sys_info_src: System::new(),
-            #[cfg(feature = "gpu-monitor")]
-            gpu_info_src: NVML::init()?
+            #[cfg(feature = "battery-monitor")]
+            battery_level: 100.0,
+            #[cfg(feature = "battery-monitor")]
+            battery_status: String::new(), 
+            datastreams: AppDataStreams::new(history_len, interpolation_len)?
         })
     }
 
@@ -97,7 +86,7 @@ impl <'a> App<'a> {
                     self.selected_proc -= 1
                 };
             }
-            Key::Down => if self.selected_proc < self.process_info.processes.len() - 1 {
+            Key::Down => if self.selected_proc < self.datastreams.process_info.processes.len() - 1 {
                 self.selected_proc += 1;
             },
             Key::Left => {
@@ -105,27 +94,17 @@ impl <'a> App<'a> {
             }
             Key::Right => {
                 self.tabs.next();
-            }
-            Key::Char('t') => {
-                self.show_chart = !self.show_chart;
-            }
+            },
             _ => {}
         }
         return None;
     }
 
     pub fn update(&mut self) -> Result<(), Error> {
-        self.sys_info_src.refresh_all();
-        self.disk_info.poll(&self.sys_info_src);
-        self.cpu_info.poll(&self.sys_info_src);
-        self.net_info.poll(&self.sys_info_src);
-        self.mem_info.poll(&self.sys_info_src);
-        self.process_info.poll(&self.sys_info_src);
-        #[cfg(feature = "gpu-monitor")]
-        self.gpu_info.poll(&self.gpu_info_src)?;
+        self.datastreams.update()?;
         //CPU History Parsing
         {
-            for (name, usage) in &self.cpu_info.cpu_usage_history {
+            for (name, usage) in &self.datastreams.cpu_info.cpu_usage_history {
                 let pairwise_data = usage.iter()
                                         .enumerate()
                                         .map(|x| (x.0 as f64, x.1.clone() as f64))
@@ -150,60 +129,96 @@ impl <'a> App<'a> {
                 }
                 let core_label = core_num.to_string();
                 core_name = format!("Core: {} ({:.2}%)", core_label, 
-                                                      (self.cpu_info.cpu_core_info[(core_num) as usize].1 * 100.0).to_string());
+                                                      (self.datastreams.cpu_info.cpu_core_info[(core_num) as usize].1 * 100.0).to_string());
                 self.cpu_panel_memory.insert(core_num, (core_name, pairwise_data));
             }
         }
         //Memory History Parsing 
         {
-            self.mem_panel_memory =  self.mem_info.memory_usage_history.iter()
+            self.mem_panel_memory =  self.datastreams.mem_info.memory_usage_history.iter()
                                                                         .enumerate()
                                                                         .map(|(i, u)| (i as f64, u.clone()))
                                                                         .collect::<Vec<(f64, f64)>>();                         
-            self.mem_usage_str = format!("Memory ({:.2}%)", 100.0 * self.mem_info.memory_usage as f64 / self.mem_info.total_memory as f64);
+            self.mem_usage_str = format!("Memory ({:.2}%)", 100.0 * self.datastreams.mem_info.memory_usage as f64 / self.datastreams.mem_info.total_memory as f64);
         }
         //Swap History Parsing
         {
-            self.swap_panel_memory =  self.mem_info.swap_usage_history.iter()
+            self.swap_panel_memory =  self.datastreams.mem_info.swap_usage_history.iter()
                                                                       .enumerate()
                                                                       .map(|(i, u)| (i as f64, u.clone()))
                                                                       .collect::<Vec<(f64, f64)>>(); 
-            self.swap_usage_str = format!("Swap ({:.2}%)", 100.0 * self.mem_info.swap_usage as f64 / self.mem_info.total_swap as f64);
+            self.swap_usage_str = format!("Swap ({:.2}%)", 100.0 * self.datastreams.mem_info.swap_usage as f64 / self.datastreams.mem_info.total_swap as f64);
         }
         //Network Parsing
         {
             
-            let (scalar, unit) = App::si_prefix(self.net_info.net_in); 
-            self.net_in_str = format!("Current Incoming Traffic: {} {}b/s", (self.net_info.net_in) / scalar, unit);
+            let (scalar, unit) = App::si_prefix(self.datastreams.net_info.net_in); 
+            self.net_in_str = format!("Current Incoming Traffic: {} {}b/s", (self.datastreams.net_info.net_in) / scalar, unit);
 
 
-            let (scalar, unit) = App::si_prefix(self.net_info.net_out); 
-            self.net_out_str = format!("Current Outgoing Network Traffic: {} {}b/s", (self.net_info.net_out) / scalar, unit);    
+            let (scalar, unit) = App::si_prefix(self.datastreams.net_info.net_out); 
+            self.net_out_str = format!("Current Outgoing Network Traffic: {} {}b/s", (self.datastreams.net_info.net_out) / scalar, unit);    
+        }
+        #[cfg(feature = "battery-monitor")]
+        {
+            self.battery_level = self.datastreams.battery_info.battery_lvl;
+            self.battery_status = match self.datastreams.battery_info.charging_status {
+                ChargingStatus::Discharging(time) =>  {
+                    let remaining_time = App::time_from_secs(time);
+                    format!("🔋 On Battery (Time to empty: {})", remaining_time)
+                },
+                ChargingStatus::Charging(time) => {
+                    let remaining_time = App::time_from_secs(time);
+                    format!("⚡ Charging (Time to full: {})", remaining_time)
+                },
+                ChargingStatus::Full => "🔌  Connected to Power".to_string(),
+                ChargingStatus::Empty => "😵 Empty Battery".to_string(),
+                ChargingStatus::Unknown => "Unknown".to_string(),
+            } 
+            + &format!("\n⚕️ Battery Health: {:.2}% (Cycle count: {})", self.datastreams.battery_info.health, 
+                                                                        self.datastreams.battery_info.cycle_count)
+            + &format!("\n〽️ Power Draw: {:.2}W ⚡ Voltage: {:.2}V 🌡  Temperature: {}", self.datastreams.battery_info.power_draw, 
+                                                                                        self.datastreams.battery_info.voltage, 
+                                                                                        self.datastreams.battery_info.temp)
+            + &format!("\nBattery Energy: {:.2}/{:.2}Wh (Designed Capacity: {:.2}Wh)", self.datastreams.battery_info.energy,
+                                                                                       self.datastreams.battery_info.energy_full,
+                                                                                       self.datastreams.battery_info.designed_energy_full)
+            + &format!("\nModel: {} Serial: {} Kind: {}", self.datastreams.battery_info.model,
+                                                          self.datastreams.battery_info.serial, 
+                                                          self.datastreams.battery_info.kind);
         }
         #[cfg(feature = "gpu-monitor")]
         //GPU Usage Parsing 
         {
-            for (id, used_mem) in self.gpu_info.memory_usage_history.iter() {
+            for (id, used_mem) in self.datastreams.gpu_info.memory_usage_history.iter() {
                 let pairwise_data = used_mem.iter()
                                             .enumerate()
                                             .map(|x| (x.0 as f64, x.1.clone() as f64))
                                             .collect::<Vec<(f64, f64)>>();
                 let (scalar, unit) = App::si_prefix(*self.gpu_info.memory_usage.get(id).unwrap() as u64);
-                let device_name = format!("GPU {} ({:.2}{}B)", id, *self.gpu_info.memory_usage.get(id).unwrap() as f64 / scalar as f64, unit);
+                let device_name = format!("GPU {} ({:.2}{}B)", id, *self.datastreams.gpu_info.memory_usage.get(id).unwrap() as f64 / scalar as f64, unit);
                 self.gpu_mem_panel_memory.insert(*id, (device_name, pairwise_data));
             } 
 
 
-            for (id, temps) in self.gpu_info.temp_history.iter() {
+            for (id, temps) in self.datastreams.gpu_info.temp_history.iter() {
                 let pairwise_data = temps.iter()
                                          .enumerate()
                                          .map(|x| (x.0 as f64, x.1.clone() as f64))
                                          .collect::<Vec<(f64, f64)>>();
-                let device_name = format!("GPU {} ({:.0}°C)", id, *self.gpu_info.temps.get(id).unwrap() as f64);
+                let device_name = format!("GPU {} ({:.0}°C)", id, *self.datastreams.gpu_info.temps.get(id).unwrap() as f64);
                 self.gpu_temp_panel_memory.insert(*id, (device_name, pairwise_data));
             } 
         }
         Ok(())
+    }
+
+    fn time_from_secs(secs: u64) -> String {
+        let hrs = secs / 3600;
+        let mut remainder = secs % 3600;
+        let mins = remainder / 60;
+        remainder = remainder % 60;
+        format!("{} hr {} min {} sec", hrs, mins, remainder)
     }
 
     fn si_prefix(num: u64) -> (u64, String) {
