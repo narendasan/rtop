@@ -15,7 +15,7 @@ pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     let default_style = Style::default().fg(Color::Cyan);
     Table::new(
         ["Device", "PID", "Command", "Mem (MB)", "Type"].into_iter(),
-        processes_by_gpu.iter().enumerate().map(|(i, p)| {
+        processes_to_display.iter().enumerate().map(|(i, p)| {
             let style = if i == selected_proc {
                 &selected_style
             } else {
