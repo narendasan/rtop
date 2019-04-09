@@ -43,7 +43,7 @@ impl <'a> App<'a> {
             tabs: Tabs {
                 titles: { 
                     if cfg!(feature = "gpu-monitor") { 
-                        vec!["System/OS/CPU", "gpu-monitor"]
+                        vec!["System/OS/CPU", "GPU"]
                     } else {
                         vec!["System/OS/CPU"]
                     }
