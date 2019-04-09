@@ -1,5 +1,6 @@
 
 use crate::rtop::app::App;
+use crate::rtop::ui::panels::utils;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
@@ -12,23 +13,13 @@ pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     let mut processes_by_cpu = app.datastreams.process_info.processes.clone();
     processes_by_cpu.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
 
-    let capacity: usize = area.height as usize - 5; //For the header 
-    let selected_proc = if app.selected_proc > capacity {
-        capacity
-    } else {
-        app.selected_proc
-    };
-
-    if app.selected_proc > capacity as usize {
-        let cutoff = app.selected_proc - capacity; 
-        processes_by_cpu = processes_by_cpu[cutoff..].to_vec();
-    }
+    let (selected_proc, processes_to_display) = utils::scrolling(area, app.selected_proc, &processes_by_cpu[..]);
 
     let selected_style = Style::default().fg(Color::White).bg(Color::Green);
     let default_style = Style::default().fg(Color::Cyan);
     let proc_table = Table::new(
         ["PID", "Command", "%CPU▲", "Mem (KB)"].into_iter(),
-        processes_by_cpu.iter().enumerate().map(|(i, s)| {
+        processes_to_display.iter().enumerate().map(|(i, s)| {
             let style = if i == selected_proc {
                 &selected_style
             } else {

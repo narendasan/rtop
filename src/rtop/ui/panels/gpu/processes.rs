@@ -1,5 +1,6 @@
 
 use crate::rtop::app::App;
+use crate::rtop::ui::panels::utils;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
@@ -8,19 +9,7 @@ use tui::layout::Rect;
 use tui::style::{Color, Style};
 
 pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    let mut processes_by_gpu = app.datastreams.gpu_info.processes.clone();
-    //processes_by_gpu.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
-    let capacity: usize = area.height as usize - 5; //For the header 
-    let selected_proc = if app.gpu_selected_proc > capacity {
-        capacity
-    } else {
-        app.gpu_selected_proc
-    };
-
-    if app.gpu_selected_proc > capacity as usize {
-        let cutoff = app.gpu_selected_proc - capacity; 
-        processes_by_gpu = processes_by_gpu[cutoff..].to_vec();
-    }
+    let (selected_proc, processes_to_display) = utils::scrolling(area, app.selected_proc, &app.datastreams.gpu_info.processes[..]);
 
     let selected_style = Style::default().fg(Color::White).bg(Color::Green);
     let default_style = Style::default().fg(Color::Cyan);
