@@ -33,8 +33,8 @@ pub fn temp_history_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect
                 .title("Temperature (°C)")
                 .style(Style::default().fg(Color::Gray))
                 .labels_style(Style::default().modifier(Modifier::Italic))
-                .bounds([30.0, 130.0])
-                .labels(&["30", "50", "70", "90", "110", "130"]),
+                .bounds([20.0, 130.0])
+                .labels(&["10", "50", "90", "130"]),
         )
         .datasets(&data.iter().map(|x| {
                         Dataset::default()

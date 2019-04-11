@@ -9,7 +9,7 @@ use tui::layout::Rect;
 use tui::style::{Color, Style};
 
 pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    let (selected_proc, processes_to_display) = utils::scrolling(area, app.selected_proc, &app.datastreams.gpu_info.processes[..]);
+    let (selected_proc, processes_to_display) = utils::scrolling(area, app.selected_gpu_proc, &app.datastreams.gpu_info.processes[..]);
 
     let selected_style = Style::default().fg(Color::White).bg(Color::Green);
     let default_style = Style::default().fg(Color::Cyan);

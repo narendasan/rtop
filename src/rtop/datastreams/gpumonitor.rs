@@ -110,7 +110,7 @@ impl GPUProcess {
 pub struct GPUMonitor {
     pub names: HashMap<u32, String>, //Device ID, Name
     pub temps: HashMap<u32, u32>, //Device ID, Temps
-    pub temp_history: HashMap<u32, Vec<u32>>, //Device ID, Temps
+    pub temp_history: HashMap<u32, Vec<f64>>, //Device ID, Temps
     pub memory_usage: HashMap<u32, u64>,
     pub memory_usage_history: HashMap<u32, Vec<f64>>, //Device ID, mem (GB) 
     pub total_memory: HashMap<u32, u64>,
@@ -175,15 +175,15 @@ impl GPUDataStream for GPUMonitor {
         for (id, gpu) in &gpus { 
             let gpu_temp = gpu.temperature(TemperatureSensor::Gpu)?;
             self.temps.insert(*id, gpu_temp);
-            let temp_history = self.temp_history.entry(*id).or_insert(vec![0; self.max_history_len]);
+            let temp_history = self.temp_history.entry(*id).or_insert(vec![0.0; self.max_history_len]);
             while temp_history.len() >= self.max_history_len {
                 temp_history.remove(0);
             }
             let last_temp = match temp_history.last() {
                 Some(l) => l.clone(),
-                None => 0,
+                None => 0.0,
             };
-            temp_history.extend_from_slice(utils::interpolate(last_temp, gpu_temp as u32, self.interpolation_len).as_slice());
+            temp_history.extend_from_slice(utils::interpolate(last_temp, gpu_temp as f64, self.interpolation_len).as_slice());
 
             let mem_usage = gpu.memory_info()?.used;
             self.memory_usage.insert(*id, mem_usage);
