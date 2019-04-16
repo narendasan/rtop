@@ -86,29 +86,25 @@ impl <'a> App<'a> {
                 return Some(Cmd::Quit);
             }
             Key::Up => {
-                if cfg!(feature = "gpu-monitor") {
+                #[cfg(feature = "gpu-monitor")]
+                {
                     if self.tabs.selection == 1 && self.selected_gpu_proc > 0 {
                         self.selected_gpu_proc -= 1
-                    } else if self.selected_proc > 0 {
-                        self.selected_proc -= 1
                     }
-                } else {
-                    if self.selected_proc > 0 {
-                        self.selected_proc -= 1
-                    }
-                };
+                }
+                if  self.tabs.selection == 0 && self.selected_proc > 0 {
+                    self.selected_proc -= 1
+                }
             }
             Key::Down => {
-                if cfg!(feature = "gpu-monitor") {
+                #[cfg(feature = "gpu-monitor")]
+                {
                     if self.tabs.selection == 1 && self.selected_gpu_proc < self.datastreams.gpu_info.processes.len() - 1 {
                         self.selected_gpu_proc += 1
-                    } else if self.selected_proc < self.datastreams.process_info.processes.len() - 1 {
-                        self.selected_proc += 1;
-                    }
-                } else {
-                    if self.selected_proc < self.datastreams.process_info.processes.len() - 1 {
-                        self.selected_proc += 1;
-                    }
+                    } 
+                } 
+                if  self.tabs.selection == 0 && self.selected_proc < self.datastreams.process_info.processes.len() - 1 {
+                    self.selected_proc += 1;
                 }
             },
             Key::Left => {

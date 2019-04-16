@@ -11,8 +11,8 @@ pub fn render_system_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect)
         .direction(Direction::Vertical)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
-            render_charts(t, app, &chunks[0]);
-            render_bottom_thrid(t, app, &chunks[1]);
+            render_top_half(t, app, &chunks[0]);
+            render_charts(t, app, &chunks[1]);
         });
 }
 
@@ -32,12 +32,12 @@ fn render_sidebar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .direction(Direction::Vertical)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
-            processes_panel(t, app, &chunks[0]);
-            disk_usage_panel(t, app, &chunks[1]);
+            disk_usage_panel(t, app, &chunks[0]);
+            network_info_panel(t, app, &chunks[1]);
         });
 }
 
-fn render_bottom_thrid(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+fn render_top_half(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     Group::default()
         .direction(Direction::Horizontal)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
@@ -52,14 +52,13 @@ fn render_bottom_left_corner(t: &mut Terminal<MouseBackend>, app: &App, area: &R
     if cfg!(feature = "battery-monitor") {    
         Group::default()
         .direction(Direction::Vertical)
-        .sizes(&[Size::Percent(25), Size::Percent(75)])
+        .sizes(&[Size::Percent(75), Size::Percent(25)])
         .render(t, area, |t, chunks| {
+            processes_panel(t, app, &chunks[0]);
             #[cfg(feature = "battery-monitor")]
-            battery_panel(t, app, &chunks[0]);
-            network_info_panel(t, app, &chunks[1]);
+            battery_panel(t, app, &chunks[1]);
         });
     } else {    
-        network_info_panel(t, app, area);
+        processes_panel(t, app, area);
     }
-
 }
