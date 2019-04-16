@@ -29,6 +29,6 @@ pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         }),
     ).block(Block::default().title("Processes").borders(Borders::ALL))
      .header_style(Style::default().fg(Color::Yellow))
-     .widths(&[15, 15, 10, 10])
+     .widths(&[10, 25, 10, 10])
      .render(t, &area);
 }
