@@ -9,6 +9,7 @@ keywords = ["system", "monitor", "info"]
 catagories = [""]
 license = "NCSA"
 edition = "2018"
+build = "build.rs"
 
 [features]
 gpu-monitor = ["nvml-wrapper"]
