@@ -1,8 +1,7 @@
 extern crate dirs;
 use std::env;
-use std::path::Path;
 use std::os::unix::fs;
-use std::process::{Command, Stdio};
+use std::process::Command;
 use std::str;
 
 //Apologies if you're trying to figure this out, ping me (@narendasan) if you need help :)
@@ -33,11 +32,12 @@ fn main() -> std::io::Result<()> {
                 }
                 Err(_) => return Err(std::io::Error::new(std::io::ErrorKind::Other, "Could not find NVIDIA Driver verion"))
             };
+
             let home_dir = match dirs::home_dir() {
                 Some(p) => format!("{}", p.display()),
                 None => return Err(std::io::Error::new(std::io::ErrorKind::Other, "Failed to find path to home directory"))
             };
-            fs::symlink("/usr/lib/nvidia-418/libnvidia-ml.so", &format!("{}/.local/lib/libnvidia-ml.so", home_dir))?;
+            fs::symlink(&format!("/usr/lib/nvidia-{}/libnvidia-ml.so", nvidia_driver_version), &format!("{}/.local/lib/libnvidia-ml.so", home_dir))?;
         }
     }
     return Ok(())
