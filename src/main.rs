@@ -1,15 +1,4 @@
-//#![feature(nll)]
-#[macro_use]
-extern crate log;
-extern crate stderrlog;
-extern crate termion;
-extern crate tui;
-extern crate sysinfo;
-#[cfg(feature = "gpu-monitor")]
-extern crate nvml_wrapper as nvml;
-
-mod rtop;
-
+#[macro_use] extern crate log;
 use std::io;
 use std::thread;
 use std::time;
@@ -22,11 +11,13 @@ use termion::input::TermRead;
 use tui::Terminal;
 use tui::backend::MouseBackend;
 
-use rtop::app::App;
-use rtop::cmd::Cmd;
-use rtop::event::Event;
-use rtop::error::Error;
-use rtop::ui::renderer::render::render;
+mod rtop;
+
+use crate::rtop::app::App;
+use crate::rtop::cmd::Cmd;
+use crate::rtop::event::Event;
+use crate::rtop::error::Error;
+use crate::rtop::ui::renderer::render;
 
 fn main() {
     exit(match _main() {
@@ -45,8 +36,10 @@ fn _main() -> Result<(), Error> {
                     .unwrap();
 
     info!("Start");
+    #[cfg(feature = "gpu-monitor")]
+    info!("GPU Monitoring Enable");
     //Program
-    let mut app = App::new(150)?;
+    let mut app = App::new(5000, 50)?;
     #[cfg(feature = "gpu-monitor")]
     app.init()?;
     let (tx, rx) = mpsc::channel();
@@ -76,7 +69,8 @@ fn _main() -> Result<(), Error> {
     let mut term_size = terminal.size().unwrap();
     terminal.clear().unwrap();
     terminal.hide_cursor().unwrap();
-
+    let mut clk_split = 0;
+    
     loop {
         let size = terminal.size().unwrap();
         if size != term_size {
@@ -97,12 +91,14 @@ fn _main() -> Result<(), Error> {
                         None => (),
                     }
                 },
-
                 Event::Tick => {
-                    app.update()?;
+                    if clk_split % 1 == 0 {
+                        app.update()?;
+                    }
                 } 
             }
         }
+
         render(&mut terminal, &app, &term_size).unwrap();
     }
     terminal.show_cursor().unwrap();

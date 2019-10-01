@@ -1,9 +1,7 @@
-extern crate sysinfo;
-
 use std::collections::HashMap;
-use self::sysinfo::{System, SystemExt, Processor, ProcessorExt};
+use sysinfo::{System, SystemExt, Processor, ProcessorExt};
 
-use rtop::datastreams::datastream::SysDataStream;
+use crate::rtop::datastreams::{datastream::SysDataStream, utils};
 
 
 pub struct CPUMonitor {
@@ -11,17 +9,20 @@ pub struct CPUMonitor {
     pub cpu_core_info: Vec<(String, f32)>, //Name, Usage
     pub cpu_usage_history: HashMap<String, Vec<f32>>, //Name, Usage
     pub cpu_temp: Option<f32>, 
+    //pub cpu_temp_history: HashMap<String, Vec<f32>>,
     max_history_len: usize,
+    interpolation_len: u16,
 }
 
 impl SysDataStream for CPUMonitor {
-    fn new(max_hist_len: usize) -> Self {        
+    fn new(max_hist_len: usize, inter_len: u16) -> Self {        
         Self {
             cpu_usage: 0.0,
             cpu_core_info: Vec::new(),
             cpu_usage_history: HashMap::new(),
             cpu_temp: None,
-            max_history_len: max_hist_len, 
+            max_history_len: max_hist_len,
+            interpolation_len: inter_len 
         }
     }
 
@@ -38,7 +39,11 @@ impl SysDataStream for CPUMonitor {
                     while history.len() >= self.max_history_len {
                         history.remove(0);
                     }
-                    history.push(entry.1);
+                    let last = match history.last() {
+                        Some(l) => l.clone(),
+                        None => 0.0,
+                    };
+                    history.extend_from_slice(utils::interpolate::<f32>(last, entry.1, self.interpolation_len).as_slice());
                 },
                 None => {},
             };
@@ -52,3 +57,4 @@ impl CPUMonitor {
         (String::from(cpu.get_name()), cpu.get_cpu_usage())
     }
 }
+

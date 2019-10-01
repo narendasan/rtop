@@ -1,26 +1,24 @@
-extern crate sysinfo;
-
-use self::sysinfo::{Pid, AsU32, Process, System, ProcessExt, SystemExt};
-use rtop::datastreams::datastream::SysDataStream;
+use sysinfo::{Pid, AsU32, Process, System, ProcessExt, SystemExt};
+use crate::rtop::datastreams::datastream::SysDataStream;
 
 pub struct ProcessMonitor {
-    pub process_info: Vec<(u32, String, f32, u64)>, //PID, Command, CPU. mem (kb)
+    pub processes: Vec<(u32, String, f32, u64)>, //PID, Command, CPU. mem (kb)
     max_history_len: usize,
 }
 
 impl SysDataStream for ProcessMonitor {
-    fn new(max_hist_len: usize) -> Self {        
+    fn new(max_hist_len: usize, inter_len: u16) -> Self {        
         Self {
-            process_info: Vec::new(),
+            processes: Vec::new(),
             max_history_len: max_hist_len,
         }
     }
 
     fn poll(&mut self, system_info: &System) {
         let processes = system_info.get_process_list();
-        self.process_info.clear();
+        self.processes.clear();
         for (pid, process) in processes {
-            self.process_info.push(ProcessMonitor::parse_process_info(pid, process));
+            self.processes.push(ProcessMonitor::parse_process_info(pid, process));
         }
     }
 }

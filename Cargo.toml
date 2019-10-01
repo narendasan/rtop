@@ -1,6 +1,6 @@
 [package]
 name = "rtop"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Naren Dasan <naren@narendasan.com>"]
 description = "A system monitor implemented in Rust"
 homepage = "https://github.com/narendasan/rtop"
@@ -8,10 +8,15 @@ readme = "README.md"
 keywords = ["system", "monitor", "info"]
 catagories = [""]
 license = "NCSA"
+edition = "2018"
+build = "build.rs"
 
 [features]
 gpu-monitor = ["nvml-wrapper"]
+battery-monitor = ["battery"]
 
+[build-dependencies]
+dirs = "1.0.5"
 
 [dependencies]
 termion = "1.5.1"
@@ -20,6 +25,7 @@ stderrlog = "0.3.0"
 rand = "0.4.1"
 tui = "0.2.0"
 sysinfo = "0.5.1"
+battery = {version = "0.7.1", optional = true}
 nvml-wrapper = {version = "0.4.0", optional = true}
 
 

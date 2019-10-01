@@ -1,18 +1,18 @@
-use rtop::app::App;
-use rtop::ui::panels::cpu::*;
+use crate::rtop::app::App;
+use crate::rtop::ui::panels::system::*;
 
 use tui::Terminal;
 use tui::backend::MouseBackend;
 use tui::widgets::Widget;
 use tui::layout::{Direction, Group, Rect, Size};
 
-pub fn render_cpu_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+pub fn render_system_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
       Group::default()
         .direction(Direction::Vertical)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
-            render_charts(t, app, &chunks[0]);
-            render_bottom_thrid(t, app, &chunks[1]);
+            render_top_half(t, app, &chunks[0]);
+            render_charts(t, app, &chunks[1]);
         });
 }
 
@@ -32,18 +32,33 @@ fn render_sidebar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
         .direction(Direction::Vertical)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
-            processes_panel(t, app, &chunks[0]);
-            disk_usage_panel(t, app, &chunks[1]);
+            disk_usage_panel(t, app, &chunks[0]);
+            network_info_panel(t, app, &chunks[1]);
         });
 }
 
-fn render_bottom_thrid(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+fn render_top_half(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
     Group::default()
         .direction(Direction::Horizontal)
         .sizes(&[Size::Percent(50), Size::Percent(50)])
         .render(t, area, |t, chunks| {
-            network_info_panel(t, app, &chunks[0]);
+            render_bottom_left_corner(t, app, &chunks[0]);
             mem_and_swap_history_panel(t, app, &chunks[1]);
             //panels::text::render_text(t, &chunks[2]);
         });
+}
+
+fn render_bottom_left_corner(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+    if cfg!(feature = "battery-monitor") {    
+        Group::default()
+        .direction(Direction::Vertical)
+        .sizes(&[Size::Percent(75), Size::Percent(25)])
+        .render(t, area, |t, chunks| {
+            processes_panel(t, app, &chunks[0]);
+            #[cfg(feature = "battery-monitor")]
+            battery_panel(t, app, &chunks[1]);
+        });
+    } else {    
+        processes_panel(t, app, area);
+    }
 }
