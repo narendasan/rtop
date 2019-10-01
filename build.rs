@@ -32,6 +32,7 @@ fn main() -> std::io::Result<()> {
                 }
                 Err(_) => return Err(std::io::Error::new(std::io::ErrorKind::Other, "Could not find NVIDIA Driver verion"))
             };
+            println!("cargo:rustc-env=LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/nvidia-{}/libnvidia-ml.so", nvidia_driver_version);
 
             let home_dir = match dirs::home_dir() {
                 Some(p) => format!("{}", p.display()),
