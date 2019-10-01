@@ -47,30 +47,31 @@ To switch between pages (only when gpu-monitor is enabled), use the arrow keys
 
 CPU Usage Percentage
 
-![cpu panel](docs/assets/cpu.jpg)
+![cpu panel](docs/assets/cpu.png)
 
 #### Disk Usage 
 
 Storage used for each partition
-![disk panel](docs/assets/disk.jpg)
+
+![disk panel](docs/assets/disk.png)
 
 #### Memory Usage
 
 Amount of memory and swap used
 
-![memory panel](docs/assets/Memory.jpg)
+![memory panel](docs/assets/Memory.png)
 
 #### Processes 
 
 List of processes running and memory and cpu usage
 
-![processes panel](docs/assets/processes.jpg)
+![processes panel](docs/assets/processes.png)
 
 #### Network Usage
 
 Network traffic going in an out of the machine
 
-![network panel](docs/assets/network.jpg)
+![network panel](docs/assets/network.png)
 
 #### Battery
 
