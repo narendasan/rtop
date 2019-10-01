@@ -33,7 +33,13 @@ If you are using rtop on a laptop you may also like a battery monitor. This can 
 cargo install rtop --features battery-monitor
 ```
 
-## Panels 
+## Usage
+
+To quit press `q`
+
+To switch between pages (only when gpu-monitor is enabled), use the arrow keys
+
+## Panels
 
 ### System 
 
