@@ -2,8 +2,10 @@ use std::io;
 use std::error;
 use std::fmt;
 
-#[cfg(feature = "gpu-monitor")] use nvml_wrapper::error::Error as nvmlError; 
-#[cfg(feature = "battery-monitor")] use battery::errors::Error as batteryError; 
+#[cfg(feature = "gpu-monitor")]
+use nvml_wrapper::error::Error as nvmlError; 
+#[cfg(feature = "battery-monitor")]
+use battery::errors::Error as batteryError; 
 
 
 #[derive(Debug)]

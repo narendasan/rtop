@@ -1,30 +1,29 @@
 use crate::rtop::app::App;
 
-use tui::Terminal;
-use tui::backend::MouseBackend;
+use tui::Frame;
+use tui::backend::Backend;
 use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Marker, Widget};
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
-pub fn cpu_usage_history_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let mut data = app.cpu_panel_memory.iter()
                                     .map(|x| {(x.0.clone(), (x.1).0.clone(), (x.1).1.clone())})
                                     .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
     data.sort_by_key(|k| k.0);
 
-
     Chart::default()
         .block(
             Block::default()
                 .title("CPU Usage")
-                .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::Bold))
+                .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::BOLD))
                 .borders(Borders::ALL),
         )
         .x_axis(
             Axis::default()
                 .title("")
                 .style(Style::default().fg(Color::Gray))
-                .labels_style(Style::default().modifier(Modifier::Italic))
+                .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds(app.window)
                 .labels(&[""]),
         )
@@ -32,18 +31,19 @@ pub fn cpu_usage_history_panel(t: &mut Terminal<MouseBackend>, app: &App, area: 
             Axis::default()
                 .title("Usage (%)")
                 .style(Style::default().fg(Color::Gray))
-                .labels_style(Style::default().modifier(Modifier::Italic))
+                .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds([0.0, 1.0])
                 .labels(&["0", "20", "40", "60", "80", "100"]),
         )
         .datasets(&data.iter().map(|x| {
+                        //println!("{}", x.2.len());
                         Dataset::default()
                             .name(&x.1)
                             .marker(Marker::Braille)
                             .style(Style::default().fg(color_map(x.0)))
                             .data(&x.2)
                     }).collect::<Vec<Dataset>>())
-        .render(t, area);
+        .render(f, area);
 }
 
 

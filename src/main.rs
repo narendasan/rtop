@@ -7,9 +7,12 @@ use std::process::exit;
 
 use termion::event;
 use termion::input::TermRead;
+use termion::input::MouseTerminal;
+use termion::raw::IntoRawMode;
+use termion::screen::AlternateScreen;
 
 use tui::Terminal;
-use tui::backend::MouseBackend;
+use tui::backend::TermionBackend;
 
 mod rtop;
 
@@ -37,7 +40,7 @@ fn _main() -> Result<(), Error> {
 
     info!("Start");
     #[cfg(feature = "gpu-monitor")]
-    info!("GPU Monitoring Enable");
+    info!("GPU Monitoring Enabled");
     //Program
     let mut app = App::new(5000, 50)?;
     #[cfg(feature = "gpu-monitor")]
@@ -64,11 +67,14 @@ fn _main() -> Result<(), Error> {
         }
     });
 
-    let backend = MouseBackend::new().unwrap();
-    let mut terminal = Terminal::new(backend).unwrap();
-    let mut term_size = terminal.size().unwrap();
-    terminal.clear().unwrap();
-    terminal.hide_cursor().unwrap();
+    let stdout = io::stdout().into_raw_mode()?;
+    let stdout = MouseTerminal::from(stdout);
+    let stdout = AlternateScreen::from(stdout);
+    let backend = TermionBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+    let mut term_size = terminal.size()?;
+    terminal.clear()?;
+    terminal.hide_cursor()?;
     let mut clk_split = 0;
     
     loop {
@@ -99,7 +105,7 @@ fn _main() -> Result<(), Error> {
             }
         }
 
-        render(&mut terminal, &app, &term_size).unwrap();
+        render(&mut terminal, &app, term_size)?;
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();

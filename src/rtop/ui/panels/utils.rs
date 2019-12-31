@@ -1,6 +1,6 @@
 use tui::layout::Rect;
 
-pub fn scrolling<T: Clone> (area: &Rect, absolute_postion: usize, data: &[T]) -> (usize, Vec<T>) {
+pub fn scrolling<T: Clone> (area: Rect, absolute_postion: usize, data: &[T]) -> (usize, Vec<T>) {
     let capacity: usize = area.height as usize - 5; //For the header 
     let selected_row = if absolute_postion > capacity {
         capacity

@@ -1,62 +1,63 @@
 use crate::rtop::app::App;
 
-use tui::Terminal;
-use tui::backend::MouseBackend;
+use tui::Frame;
+use tui::backend::Backend;
 use tui::widgets::{Block, BarChart, Borders, Widget};
-use tui::layout::{Group, Direction, Rect, Size};
+use tui::layout::{Layout, Direction, Rect, Constraint};
 use tui::style::{Color, Modifier, Style};
 
-pub fn disk_usage_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let num_drives = app.datastreams.disk_info.disk_usage.len() as u16;
     let gauge_width: u16 = 100 / num_drives;
-    let sizes = (0..num_drives).map(|_| {Size::Percent(gauge_width)})
-                                .collect::<Vec<Size>>();
+    let constraints = (0..num_drives).map(|_| {Constraint::Percentage(gauge_width)})
+                                .collect::<Vec<Constraint>>();
 
     Block::default()
         .borders(Borders::ALL)
         .title("Disk Usage")
-        .render(t, area);
-    Group::default()
+        .render(f, area);
+    
+    let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
         .margin(1)
-        .sizes(&sizes)
-        .render(t, area, |t, chunks| {
-            for drive_num in 0..app.datastreams.disk_info.disk_usage.len() {
-                let drive = &app.datastreams.disk_info.disk_usage[drive_num];
-                let label = drive.0.clone() + &(" (%)").to_string();
-                let usage = (drive.2 as f64 / drive.3 as f64) * 100.0;
-                Group::default()
-                    .direction(Direction::Vertical)
-                    .margin(1)
-                    .sizes(&[Size::Percent(50)])
-                    .render(t, &chunks[drive_num], |t, chunk| {
-                        BarChart::default()
-                            .block(Block::default()
-                                        .title(&(label))
-                                        .borders(Borders::NONE))
-                            .data(&[(&format!("{:.1}%", usage), usage as u64)])
-                            .bar_width(5)
-                            .bar_gap(0)
-                            .max(105)
-                            .style(Style::default()
-                                    .fg(if usage < 60.0 { 
-                                            Color::LightGreen
-                                        } else if usage < 85.0 { 
-                                            Color::LightYellow
-                                        } else {
-                                            Color::LightRed
-                                        }))
-                            .value_style(Style::default()
-                                            .bg(if usage < 60.0 { 
-                                                    Color::LightGreen
-                                                } else if usage < 85.0 { 
-                                                    Color::LightYellow
-                                                } else {
-                                                    Color::LightRed
-                                                }).modifier(Modifier::Bold))
-                            .render(t, &chunk[0]);
-                    });
-            }
-        });
+        .constraints(constraints.as_ref())
+        .split(area);
+        
+    for drive_num in 0..app.datastreams.disk_info.disk_usage.len() {
+        let drive = &app.datastreams.disk_info.disk_usage[drive_num];
+        let label = drive.0.clone() + &(" (%)").to_string();
+        let usage = (drive.2 as f64 / drive.3 as f64) * 100.0;
+        let chunk = Layout::default()
+            .direction(Direction::Vertical)
+            .margin(1)
+            .constraints([Constraint::Percentage(50)].as_ref())
+            .split(sub_areas[drive_num]);
+                
+        BarChart::default()
+            .block(Block::default()
+                   .title(&(label))
+                   .borders(Borders::NONE))
+            .data(&[(&format!("{:.1}%", usage), usage as u64)])
+            .bar_width(5)
+            .bar_gap(0)
+            .max(105)
+            .style(Style::default()
+                   .fg(if usage < 60.0 { 
+                       Color::LightGreen
+                   } else if usage < 85.0 { 
+                       Color::LightYellow
+                   } else {
+                       Color::LightRed
+                   }))
+            .value_style(Style::default()
+                         .bg(if usage < 60.0 { 
+                             Color::LightGreen
+                         } else if usage < 85.0 { 
+                             Color::LightYellow
+                         } else {
+                             Color::LightRed
+                         }).modifier(Modifier::BOLD))
+            .render(f, chunk[0]);
+    }
 }
 

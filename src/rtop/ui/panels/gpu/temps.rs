@@ -1,12 +1,12 @@
 use crate::rtop::app::App;
 
-use tui::Terminal;
-use tui::backend::MouseBackend;
+use tui::Frame;
+use tui::backend::Backend;
 use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Marker, Widget};
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
-pub fn temp_history_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+pub fn temp_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let mut data = app.gpu_temp_panel_memory.iter()
                                             .map(|x| {(x.0.clone(), (x.1).0.clone(), (x.1).1.clone())})
                                             .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
@@ -43,7 +43,7 @@ pub fn temp_history_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect
                             .style(Style::default().fg(color_map(x.0)))
                             .data(&x.2)
                     }).collect::<Vec<Dataset>>())
-        .render(t, area);
+        .render(f, area);
 }
 
 

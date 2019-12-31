@@ -1,64 +1,62 @@
 use crate::rtop::app::App;
 use crate::rtop::ui::panels::system::*;
 
-use tui::Terminal;
-use tui::backend::MouseBackend;
+use tui::Frame;
+use tui::backend::Backend;
 use tui::widgets::Widget;
-use tui::layout::{Direction, Group, Rect, Size};
+use tui::layout::{Direction, Layout, Rect, Constraint};
 
-pub fn render_system_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-      Group::default()
+pub fn render_system_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+    let sub_areas = Layout::default()
         .direction(Direction::Vertical)
-        .sizes(&[Size::Percent(50), Size::Percent(50)])
-        .render(t, area, |t, chunks| {
-            render_top_half(t, app, &chunks[0]);
-            render_charts(t, app, &chunks[1]);
-        });
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(area);
+
+    render_top_half(f, app, sub_areas[0]);
+    render_charts(f, app, sub_areas[1]);
 }
 
-pub fn render_charts(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    let sizes = vec![Size::Percent(35), Size::Percent(65)];
-    Group::default()
+pub fn render_charts<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+    let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
-        .sizes(&sizes)
-        .render(t, area, |t, chunks| {
-                render_sidebar(t, app, &chunks[0]);
-                cpu_usage_history_panel(t, app, &chunks[1]);
-        });
+        .constraints([Constraint::Percentage(35), Constraint::Percentage(65)].as_ref())
+        .split(area);
+    
+    render_sidebar(f, app, sub_areas[0]);
+    cpu_usage_history_panel(f, app, sub_areas[1]);
 }
 
-fn render_sidebar(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    Group::default()
+fn render_sidebar<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+    let sub_areas = Layout::default()
         .direction(Direction::Vertical)
-        .sizes(&[Size::Percent(50), Size::Percent(50)])
-        .render(t, area, |t, chunks| {
-            disk_usage_panel(t, app, &chunks[0]);
-            network_info_panel(t, app, &chunks[1]);
-        });
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(area);
+
+    disk_usage_panel(f, app, sub_areas[0]);
+    network_info_panel(f, app, sub_areas[1]);
 }
 
-fn render_top_half(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    Group::default()
+fn render_top_half<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+    let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
-        .sizes(&[Size::Percent(50), Size::Percent(50)])
-        .render(t, area, |t, chunks| {
-            render_bottom_left_corner(t, app, &chunks[0]);
-            mem_and_swap_history_panel(t, app, &chunks[1]);
-            //panels::text::render_text(t, &chunks[2]);
-        });
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(area);
+    
+    render_bottom_left_corner(f, app, sub_areas[0]);
+    mem_and_swap_history_panel(f, app, sub_areas[1]);
 }
 
-fn render_bottom_left_corner(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+fn render_bottom_left_corner<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     if cfg!(feature = "battery-monitor") {    
-        Group::default()
-        .direction(Direction::Vertical)
-        .sizes(&[Size::Percent(75), Size::Percent(25)])
-        .render(t, area, |t, chunks| {
-            processes_panel(t, app, &chunks[0]);
-            #[cfg(feature = "battery-monitor")]
-            battery_panel(t, app, &chunks[1]);
-        });
+        let sub_areas = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([Constraint::Percentage(75), Constraint::Percentage(25)].as_ref())
+            .split(area);
+        
+        processes_panel(f, app, sub_areas[0]);
+        #[cfg(feature = "battery-monitor")]
+        battery_panel(f, app, sub_areas[1]);
     } else {    
-        processes_panel(t, app, area);
+        processes_panel(f, app, area);
     }
 }

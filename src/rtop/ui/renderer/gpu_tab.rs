@@ -1,28 +1,27 @@
-
 use crate::rtop::app::App;
 use crate::rtop::ui::panels::gpu::*;
 
-use tui::Terminal;
-use tui::backend::MouseBackend;
+use tui::Frame;
+use tui::backend::Backend;
 use tui::widgets::Widget;
-use tui::layout::{Direction, Group, Rect, Size};
+use tui::layout::{Direction, Layout, Rect, Constraint};
 
-pub fn render_gpu_tab(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-     Group::default()
+pub fn render_gpu_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+     let sub_areas = Layout::default()
         .direction(Direction::Vertical)
-        .sizes(&[Size::Percent(60), Size::Percent(40)])
-        .render(t, area, |t, chunks| {
-            processes_panel(t, app, &chunks[0]);
-            render_bottom_third(t, app, &chunks[1])
-        });
+        .constraints([Constraint::Percentage(60), Constraint::Percentage(40)].as_ref())
+        .split(area);
+        
+    processes_panel(f, app, sub_areas[0]);
+    render_bottom_third(f, app, sub_areas[1])
 }
 
-fn render_bottom_third(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
-    Group::default()
+fn render_bottom_third<B: Backend(t: &mut Frame<B>, app: &App, area: Rect) {
+    let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
-        .sizes(&[Size::Percent(50), Size::Percent(50)])
-        .render(t, area, |t, chunks| {
-            mem_history_panel(t, app, &chunks[0]);
-            temp_history_panel(t, app, &chunks[1]);
-        });
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(area);
+        
+    mem_history_panel(f, app, sub_areas[0]);
+    temp_history_panel(f, app, sub_areas[1]);
 }

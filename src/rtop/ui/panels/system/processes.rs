@@ -1,15 +1,14 @@
-
 use crate::rtop::app::App;
 use crate::rtop::ui::panels::utils;
 
-use tui::Terminal;
-use tui::backend::MouseBackend;
+use tui::Frame;
+use tui::backend::Backend;
 use tui::widgets::{Block, Borders, Row, Table, Widget};
-use tui::layout::Rect;
+use tui::layout::{Rect, Constraint};
 use tui::style::{Color, Style};
 
 
-pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
+pub fn processes_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let mut processes_by_cpu = app.datastreams.process_info.processes.clone();
     processes_by_cpu.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap());
 
@@ -25,10 +24,10 @@ pub fn processes_panel(t: &mut Terminal<MouseBackend>, app: &App, area: &Rect) {
             } else {
                 &default_style
             };
-            Row::StyledData(vec![s.0.to_string(), s.1.to_string(), format!("{:.2}", s.2), s.3.to_string()].into_iter(), style)
+            Row::StyledData(vec![s.0.to_string(), s.1.to_string(), format!("{:.2}", s.2), s.3.to_string()].into_iter(), *style)
         }),
     ).block(Block::default().title("Processes").borders(Borders::ALL))
      .header_style(Style::default().fg(Color::Yellow))
-     .widths(&[10, 25, 10, 10])
-     .render(t, &area);
+     .widths([Constraint::Length(10), Constraint::Length(25), Constraint::Length(10), Constraint::Length(10)].as_ref())
+     .render(f, area);
 }
