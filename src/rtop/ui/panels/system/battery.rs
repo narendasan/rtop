@@ -32,14 +32,15 @@ pub fn battery_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
                    Color::LightGreen
                }))
         .render(f, sub_areas[0]);
-    
-    Paragraph::new()
+
+    let content = format!("\n{}\n", app.battery_status);
+    let text = [Text::raw(content.as_str())];
+    Paragraph::new(text.iter())
         .block(
             Block::default()
                 .borders(Borders::NONE)
         )
         .wrap(true)
-        .text(Text::raw(format!("\n{}\n", app.battery_status).as_str()))
-        .render(f, sub_area[1]);
+        .render(f, sub_areas[1]);
 }
 
