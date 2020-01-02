@@ -77,7 +77,11 @@ Network traffic going in an out of the machine
 
 > Enabled by installing the `battery-monitor` feature
 
+![battery panel](docs/assets/battery.png)
+
 ### GPU
+
+> Enabled by installing the `gpu-monitor` feature
 
 #### Processes using GPU
 
