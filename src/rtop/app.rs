@@ -29,6 +29,8 @@ pub struct App<'a> {
     #[cfg(feature = "gpu-monitor")] 
     pub gpu_temp_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
     #[cfg(feature = "gpu-monitor")] 
+    pub gpu_power_panel_memory: HashMap<u32, (String, Vec<(f64, f64)>)>,
+    #[cfg(feature = "gpu-monitor")] 
     pub selected_gpu_proc: usize,
     pub datastreams: AppDataStreams
 }
@@ -63,6 +65,8 @@ impl <'a> App<'a> {
             gpu_mem_panel_memory: HashMap::new(),
             #[cfg(feature = "gpu-monitor")] 
             gpu_temp_panel_memory: HashMap::new(),
+            #[cfg(feature = "gpu-monitor")] 
+            gpu_power_panel_memory: HashMap::new(),
             #[cfg(feature = "gpu-monitor")] 
             selected_gpu_proc: 0, 
             datastreams: AppDataStreams::new(history_len, interpolation_len)?
@@ -221,7 +225,16 @@ impl <'a> App<'a> {
                                          .collect::<Vec<(f64, f64)>>();
                 let device_name = format!("GPU {} ({:.0}°C)", id, *self.datastreams.gpu_info.temps.get(id).unwrap() as f64);
                 self.gpu_temp_panel_memory.insert(*id, (device_name, pairwise_data));
-            } 
+            }
+
+            for (id, power) in self.datastreams.gpu_info.power_usage_history.iter() {
+                let pairwise_data = power.iter()
+                                         .enumerate()
+                                         .map(|x| (x.0 as f64, x.1.clone() as f64))
+                                         .collect::<Vec<(f64, f64)>>();
+                let device_name = format!("GPU {} ({:.0}W)", id, *self.datastreams.gpu_info.power_usage.get(id).unwrap() as f64);
+                self.gpu_power_panel_memory.insert(*id, (device_name, pairwise_data));
+            }
         }
         Ok(())
     }

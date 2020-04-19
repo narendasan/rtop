@@ -7,11 +7,11 @@ use tui::symbols::Marker;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
-pub fn mem_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    let mut data = app.gpu_mem_panel_memory.iter().map(|x| {
+pub fn power_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+    let mut data = app.gpu_power_panel_memory.iter().map(|x| {
         (x.0.clone(), (x.1).0.clone(), (x.1).1.clone())
     }).collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
-    
+
     data.sort_by_key(|k| k.0);
 
     let datasets = data.iter().map(|x| {
@@ -22,32 +22,29 @@ pub fn mem_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
             .data(&x.2)
     }).collect::<Vec<Dataset>>();
     
-    let mem_usage = Chart::default()
+    let power = Chart::default()
         .block(
             Block::default()
-                .title("GPU Memory Usage")
+                .title("GPU Power Usage")
                 .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::BOLD))
                 .borders(Borders::ALL),
-        )
-        .x_axis(
+        ).x_axis(
             Axis::default()
                 .title("")
                 .style(Style::default().fg(Color::Gray))
                 .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds(app.window)
                 .labels(&[""]),
-        )
-        .y_axis(
+        ).y_axis(
             Axis::default()
-                .title("Usage (%)")
+                .title("Power (W)")
                 .style(Style::default().fg(Color::Gray))
                 .labels_style(Style::default().modifier(Modifier::ITALIC))
-                .bounds([0.0, 1.0])
-                .labels(&["0", "20", "40", "60", "80", "100"]),
-        )
-        .datasets(&datasets);
-
-    f.render_widget(mem_usage, area);
+                .bounds([0.0, 400.0])
+                .labels(&["0", "100", "200", "300", "400"]),
+        ).datasets(&datasets);
+    
+    f.render_widget(power, area);
 }
 
 

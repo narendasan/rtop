@@ -18,9 +18,10 @@ pub fn render_gpu_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
 fn render_bottom_third<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .constraints([Constraint::Percentage(33), Constraint::Percentage(33), Constraint::Percentage(33)].as_ref())
         .split(area);
         
     mem_history_panel(f, app, sub_areas[0]);
     temp_history_panel(f, app, sub_areas[1]);
+    power_history_panel(f, app, sub_areas[2]);
 }

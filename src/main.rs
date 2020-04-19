@@ -63,7 +63,7 @@ fn _main() -> Result<(), Error> {
         let tx = tx.clone();
         loop {
             tx.send(Event::Tick).unwrap();
-            thread::sleep(time::Duration::from_millis(1000));
+            thread::sleep(time::Duration::from_millis(2000));
         }
     });
 

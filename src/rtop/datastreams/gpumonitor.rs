@@ -205,13 +205,19 @@ impl GPUDataStream for GPUMonitor {
             }
             clks_history.push(clk.clone());
                 
-            //let pow = gpu.power_usage()?; 
-            //self.power_usage.insert(*id, pow);
-            //let power_history = self.power_usage_history.entry(*id).or_insert(vec![0; self.max_history_len]);
-            //while power_history.len() >= self.max_history_len {
-            //    power_history.remove(0);
-            //}
-            //power_history.push(pow);
+            let pow = gpu.power_usage()? / 1000; 
+            self.power_usage.insert(*id, pow);
+            let power_history = self.power_usage_history.entry(*id).or_insert(vec![0; self.max_history_len]);
+            while power_history.len() >= self.max_history_len {
+                power_history.remove(0);
+            }
+
+            let last_power = match power_history.last() {
+                Some(l) => l.clone(),
+                None => 0,
+            };
+            power_history.extend_from_slice(utils::interpolate(last_power, pow, self.interpolation_len).as_slice());
+
             let cl = gpu.running_compute_processes()?;
             let cl_processes = GPUProcess::proc_list(&cl, *id, GPUProcessType::Compute);
             let gl = gpu.running_graphics_processes()?;
