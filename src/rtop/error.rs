@@ -30,7 +30,7 @@ impl fmt::Display for Error {
 }
 
 impl error::Error for Error {
-    fn source(&self) -> Option<&(error::Error + 'static)> {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
         match *self {
             Error::IoError(ref err) => Some(err),
             #[cfg(feature = "gpu-monitor")]

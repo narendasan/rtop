@@ -3,6 +3,7 @@ mod processes;
 mod memoryswapusage;
 mod network;
 mod disks;
+#[cfg(feature = "battery-monitor")]
 mod battery;
 
 pub use self::cpuusage::cpu_usage_history_panel as cpu_usage_history_panel;

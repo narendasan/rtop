@@ -3,7 +3,6 @@ use crate::rtop::ui::panels::system::*;
 
 use tui::Frame;
 use tui::backend::Backend;
-use tui::widgets::Widget;
 use tui::layout::{Direction, Layout, Rect, Constraint};
 
 pub fn render_system_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {

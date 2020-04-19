@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use sysinfo::{System, SystemExt, Pid, AsU32, Process, ProcessExt};
+use sysinfo::{System, SystemExt, Pid, ProcessExt};
 
 extern crate nvml_wrapper as nvml;
 //use nvml_wrapper as nvml;
@@ -168,7 +168,7 @@ impl GPUDataStream for GPUMonitor {
     fn poll(&mut self, nvml: &NVML) -> Result<(), Error> {
         let num_gpus = match nvml.device_count() {
             Ok(n) => n,
-            Err(e) => 0,
+            Err(_e) => 0,
         };
         let gpus: Vec<(u32, Device)> = (0..num_gpus).map(|id| (id, nvml.device_by_index(id).unwrap()))
                                                     .collect(); 

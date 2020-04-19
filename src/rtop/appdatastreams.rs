@@ -2,8 +2,6 @@ use sysinfo::System as SysInfoSystem;
 use sysinfo::SystemExt;
 #[cfg(feature = "gpu-monitor")]
 use nvml_wrapper::NVML;
-#[cfg(feature = "gpu-monitor")] 
-use nvml_wrapper::error::Error as nvmlError;
 #[cfg(feature = "battery-monitor")]
 use battery::Manager;
 

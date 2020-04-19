@@ -1,10 +1,5 @@
 use std::collections::HashMap;
 use termion::event::Key;
-use sysinfo::SystemExt;
-#[cfg(feature = "gpu-monitor")]
-use nvml_wrapper::NVML;
-#[cfg(feature = "gpu-monitor")] 
-use nvml_wrapper::error::Error as nvmlError;
 
 use crate::rtop::cmd::Cmd;
 use crate::rtop::error::Error;
@@ -128,7 +123,7 @@ impl <'a> App<'a> {
                                         .map(|x| (x.0 as f64, x.1.clone() as f64))
                                         .collect::<Vec<(f64, f64)>>();
                 let mut core_name = name.clone();
-                let mut core_num = 0;
+                let core_num;
                 if cfg!(target_os = "macos") {
                     match core_name.parse::<u32>() {
                         Ok(num) => {core_num = num - 1}, //MacOS 
@@ -231,6 +226,7 @@ impl <'a> App<'a> {
         Ok(())
     }
 
+    #[cfg(feature = "battery-monitor")]
     fn time_from_secs(secs: u64) -> String {
         let hrs = secs / 3600;
         let mut remainder = secs % 3600;

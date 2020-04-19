@@ -72,17 +72,12 @@ fn _main() -> Result<(), Error> {
     let stdout = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
-    let mut term_size = terminal.size()?;
     terminal.clear()?;
     terminal.hide_cursor()?;
-    let mut clk_split = 0;
+
+    let clk_split = 0;
     
     loop {
-        let size = terminal.size().unwrap();
-        if size != term_size {
-            terminal.resize(size).unwrap();
-            term_size = size;
-        }
         let evt = rx.recv().unwrap();
         {
             match evt {
@@ -91,7 +86,7 @@ fn _main() -> Result<(), Error> {
                         Some(command) => {
                             match command {
                                 Cmd::Quit => {break},
-                                _ => (),
+                                //_ => (),
                             }
                         },
                         None => (),
@@ -105,7 +100,7 @@ fn _main() -> Result<(), Error> {
             }
         }
 
-        render(&mut terminal, &app, term_size)?;
+        render(&mut terminal, &app)?;
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();

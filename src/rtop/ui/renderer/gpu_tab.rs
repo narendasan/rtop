@@ -3,7 +3,6 @@ use crate::rtop::ui::panels::gpu::*;
 
 use tui::Frame;
 use tui::backend::Backend;
-use tui::widgets::Widget;
 use tui::layout::{Direction, Layout, Rect, Constraint};
 
 pub fn render_gpu_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {

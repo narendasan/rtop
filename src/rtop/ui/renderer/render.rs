@@ -9,7 +9,7 @@ use tui::widgets::{Block, Borders, Tabs, Widget};
 use tui::layout::{Direction, Layout, Rect, Constraint};
 use tui::style::{Color, Style};
 
-pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App, area: Rect) -> Result<(), io::Error> {
+pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App) -> Result<(), io::Error> {
     t.draw(|mut f| {
         let sub_areas = Layout::default()
             .direction(Direction::Vertical)

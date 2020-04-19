@@ -13,7 +13,7 @@ pub fn processes_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let selected_style = Style::default().fg(Color::White).bg(Color::Green);
     let default_style = Style::default().fg(Color::Cyan);
     Table::new(
-        ["Device", "PID", "Command", "Mem (MB)", "Type"].into_iter(),
+        ["Device", "PID", "Command", "Mem (MB)", "Type"].iter(),
         processes_to_display.iter().enumerate().map(|(i, p)| {
             let style = if i == selected_proc {
                 &selected_style

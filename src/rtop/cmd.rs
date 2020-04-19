@@ -1,4 +1,4 @@
 pub enum Cmd {
     Quit,
-    Bell,
+    //Bell,
 }
