@@ -2,7 +2,7 @@ use crate::rtop::app::App;
 
 use tui::Frame;
 use tui::backend::Backend;
-use tui::widgets::{Block, BarChart, Borders, Widget};
+use tui::widgets::{Block, BarChart, Borders};
 use tui::layout::{Layout, Direction, Rect, Constraint};
 use tui::style::{Color, Modifier, Style};
 
@@ -12,10 +12,9 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let constraints = (0..num_drives).map(|_| {Constraint::Percentage(gauge_width)})
                                 .collect::<Vec<Constraint>>();
 
-    Block::default()
+    let panel = Block::default()
         .borders(Borders::ALL)
-        .title("Disk Usage")
-        .render(f, area);
+        .title("Disk Usage");
     
     let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
@@ -32,12 +31,14 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
             .margin(1)
             .constraints([Constraint::Percentage(50)].as_ref())
             .split(sub_areas[drive_num]);
-                
-        BarChart::default()
+
+        let data = [(&format!("{:.1}%", usage)[..], usage as u64)];
+        
+        let chart = BarChart::default()
             .block(Block::default()
                    .title(&(label))
                    .borders(Borders::NONE))
-            .data(&[(&format!("{:.1}%", usage), usage as u64)])
+            .data(&data)
             .bar_width(5)
             .bar_gap(0)
             .max(105)
@@ -56,8 +57,10 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
                              Color::LightYellow
                          } else {
                              Color::LightRed
-                         }).modifier(Modifier::BOLD))
-            .render(f, chunk[0]);
+                         }).modifier(Modifier::BOLD));
+
+        f.render_widget(panel, area);
+        f.render_widget(chart, chunk[0]);
     }
 }
 

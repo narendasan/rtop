@@ -8,18 +8,22 @@ use tui::style::{Color, Modifier, Style};
 
 #[cfg(feature = "battery-monitor")]
 pub fn battery_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    Block::default()
+    let panel = Block::default()
         .borders(Borders::ALL)
-        .title("Battery")
-        .render(f, area);
+        .title("Battery");
+    
 
     let sub_areas = Layout::default()
         .direction(Direction::Vertical)
         .margin(2)
-        .constraints([Constraint::Percentage(40), Constraint::Percentage(60)].as_ref())
+        .constraints(
+            [
+                Constraint::Percentage(40),
+                Constraint::Percentage(60)
+            ].as_ref())
         .split(area);
     
-    Gauge::default()
+    let battery_chart = Gauge::default()
         .block(Block::default()
                .borders(Borders::NONE))
         .percent(app.battery_level as u16)
@@ -30,17 +34,17 @@ pub fn battery_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
                    Color::LightYellow
                } else {
                    Color::LightGreen
-               }))
-        .render(f, sub_areas[0]);
+               }));
+
+    f.render_widget(battery_chart, sub_areas[0]);
 
     let content = format!("\n{}\n", app.battery_status);
     let text = [Text::raw(content.as_str())];
-    Paragraph::new(text.iter())
-        .block(
-            Block::default()
-                .borders(Borders::NONE)
-        )
-        .wrap(true)
-        .render(f, sub_areas[1]);
+    let status = Paragraph::new(text.iter())
+        .block(Block::default().borders(Borders::NONE))
+        .wrap(true);
+
+    f.render_widget(panel, area);
+    f.render_widget(status, sub_areas[1]);
 }
 

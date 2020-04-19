@@ -2,7 +2,8 @@ use crate::rtop::app::App;
 
 use tui::Frame;
 use tui::backend::Backend;
-use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Marker, Widget};
+use tui::widgets::{Axis, Block, Borders, Chart, Dataset};
+use tui::symbols::Marker;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
@@ -12,7 +13,15 @@ pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Re
                                     .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
     data.sort_by_key(|k| k.0);
 
-    Chart::default()
+    let datasets = &data.iter().map(|x| {
+        Dataset::default()
+            .name(&x.1)
+            .marker(Marker::Braille)
+            .style(Style::default().fg(color_map(x.0)))
+            .data(&x.2)
+    }).collect::<Vec<Dataset>>();
+    
+    let cpu_usage = Chart::default()
         .block(
             Block::default()
                 .title("CPU Usage")
@@ -35,15 +44,9 @@ pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Re
                 .bounds([0.0, 1.0])
                 .labels(&["0", "20", "40", "60", "80", "100"]),
         )
-        .datasets(&data.iter().map(|x| {
-                        //println!("{}", x.2.len());
-                        Dataset::default()
-                            .name(&x.1)
-                            .marker(Marker::Braille)
-                            .style(Style::default().fg(color_map(x.0)))
-                            .data(&x.2)
-                    }).collect::<Vec<Dataset>>())
-        .render(f, area);
+        .datasets(&datasets);
+    
+    f.render_widget(cpu_usage, area);
 }
 
 

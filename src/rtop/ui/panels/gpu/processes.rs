@@ -3,7 +3,7 @@ use crate::rtop::ui::panels::utils;
 
 use tui::Frame;
 use tui::backend::Backend;
-use tui::widgets::{Block, Borders, Row, Table, Widget};
+use tui::widgets::{Block, Borders, Row, Table};
 use tui::layout::{Rect, Constraint};
 use tui::style::{Color, Style};
 
@@ -12,7 +12,7 @@ pub fn processes_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
 
     let selected_style = Style::default().fg(Color::White).bg(Color::Green);
     let default_style = Style::default().fg(Color::Cyan);
-    Table::new(
+    let proc_table = Table::new(
         ["Device", "PID", "Command", "Mem (MB)", "Type"].iter(),
         processes_to_display.iter().enumerate().map(|(i, p)| {
             let style = if i == selected_proc {
@@ -28,8 +28,9 @@ pub fn processes_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
         }),
     ).block(Block::default().title("Processes").borders(Borders::ALL))
                             .header_style(Style::default().fg(Color::Yellow))
-                            .widths(&[Constraint::Length(7), Constraint::Length(5), Constraint::Length(15), Constraint::Length(10)])
-                            .render(f, area);  
+                            .widths(&[Constraint::Length(7), Constraint::Length(5), Constraint::Length(15), Constraint::Length(10)]);
+
+    f.render_widget(proc_table, area);  
 }
 
 fn bytes_to_mb(mem: Option<u64>) -> String {

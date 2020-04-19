@@ -8,7 +8,7 @@ use tui::layout::{Direction, Layout, Rect, Constraint};
 pub fn render_system_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let sub_areas = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .constraints([Constraint::Percentage(40), Constraint::Percentage(60)].as_ref())
         .split(area);
 
     render_top_half(f, app, sub_areas[0]);

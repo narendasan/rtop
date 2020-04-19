@@ -5,7 +5,7 @@ use crate::rtop::ui::renderer::*;
 
 use tui::{Terminal, Frame};
 use tui::backend::Backend;
-use tui::widgets::{Block, Borders, Tabs, Widget};
+use tui::widgets::{Block, Borders, Tabs};
 use tui::layout::{Direction, Layout, Rect, Constraint};
 use tui::style::{Color, Style};
 
@@ -32,11 +32,12 @@ pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App) -> Result<(), io::Erro
 
 
 fn render_tab_bar<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    Tabs::default()
+    let tabs = Tabs::default()
         .block(Block::default().borders(Borders::ALL).title("Tabs"))
         .titles(&app.tabs.titles)
         .style(Style::default().fg(Color::Green))
         .highlight_style(Style::default().fg(Color::Yellow))
-        .select(app.tabs.selection)
-        .render(f, area);
+        .select(app.tabs.selection);
+
+    f.render_widget(tabs, area);
 }
