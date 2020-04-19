@@ -1,42 +1,51 @@
+use std::collections::HashMap;
 use sysinfo::{System, SystemExt, NetworkExt};
+
 use crate::rtop::datastreams::datastream::SysDataStream;
 
 
 pub struct NetworkMonitor {
-    pub net_in_history: Vec<u64>,
-    pub net_out_history: Vec<u64>, 
-    pub net_in: u64,
-    pub net_out: u64, 
+    pub net_in_history: HashMap<String, Vec<u64>>,
+    pub net_out_history: HashMap<String, Vec<u64>>, 
+    pub net_in: HashMap<String, u64>,
+    pub net_out: HashMap<String, u64>, 
     max_sparkline_len: usize,
 }
 
 impl SysDataStream for NetworkMonitor {
-    fn new(_max_hist_len: usize, _inter_len: u16) -> Self {        
+    fn new(max_hist_len: usize, _inter_len: u16) -> Self {        
         Self {
-            net_in_history: Vec::new(),
-            net_out_history: Vec::new(), 
-            net_in: 0, //in bits
-            net_out: 0, //in bits
-            max_sparkline_len: 50,
+            net_in_history: HashMap::new(),
+            net_out_history: HashMap::new(), 
+            net_in: HashMap::new(), //bits
+            net_out: HashMap::new(), //bits
+            max_sparkline_len: max_hist_len,
         }
     }
 
     fn poll(&mut self, system_info: &System) {
-        let net = system_info.get_network();
-        self.net_in = net.get_income() * 8;
-        self.net_out = net.get_outcome() * 8;
+        let networks = system_info.get_networks();
 
-        let (inc, out) = NetworkMonitor::parse_networking_info((self.net_in, self.net_out));
+        for (interface, network) in networks {
+            self.net_in.insert(interface.to_string(), network.get_received() * 8);
+            self.net_out.insert(interface.to_string(), network.get_transmitted() * 8);
+            
+            let (inc, out) = NetworkMonitor::parse_networking_info((self.net_in[interface], self.net_out[interface]));
 
-        while self.net_in_history.len() >= self.max_sparkline_len {
-            self.net_in_history.remove(0);
+            let in_history = self.net_in_history.entry(interface.to_string())
+                                                .or_insert(vec![0; self.max_sparkline_len]);
+            while in_history.len() >= self.max_sparkline_len {
+                in_history.remove(0);
+            }
+            in_history.push(inc);
+            
+            let out_history = self.net_out_history.entry(interface.to_string())
+                                                  .or_insert(vec![0; self.max_sparkline_len]);
+            while out_history.len() >= self.max_sparkline_len {
+                out_history.remove(0);
+            }
+            out_history.push(out);            
         }
-        self.net_in_history.push(inc);
-
-        while self.net_out_history.len() >= self.max_sparkline_len {
-            self.net_out_history.remove(0);
-        }
-        self.net_out_history.push(out);
     }
 }
 

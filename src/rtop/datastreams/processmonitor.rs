@@ -13,7 +13,7 @@ impl SysDataStream for ProcessMonitor {
     }
 
     fn poll(&mut self, system_info: &System) {
-        let processes = system_info.get_process_list();
+        let processes = system_info.get_processes();
         self.processes.clear();
         for (pid, process) in processes {
             self.processes.push(ProcessMonitor::parse_process_info(pid, process));

@@ -18,8 +18,8 @@ pub struct App<'a> {
     pub mem_usage_str: String,
     pub swap_panel_memory: Vec<(f64, f64)>,
     pub swap_usage_str: String,
-    pub net_in_str: String,
-    pub net_out_str: String,
+    pub net_in_strs: HashMap<String, String>,
+    pub net_out_strs: HashMap<String, String>,
     #[cfg(feature = "battery-monitor")]
     pub battery_level: f32,
     #[cfg(feature = "battery-monitor")]
@@ -53,8 +53,8 @@ impl <'a> App<'a> {
             mem_usage_str: String::new(),
             swap_panel_memory: Vec::new(),
             swap_usage_str: String::new(),
-            net_in_str: String::new(),
-            net_out_str: String::new(),
+            net_in_strs: HashMap::new(),
+            net_out_strs: HashMap::new(),
             #[cfg(feature = "battery-monitor")]
             battery_level: 100.0,
             #[cfg(feature = "battery-monitor")]
@@ -164,13 +164,17 @@ impl <'a> App<'a> {
         }
         //Network Parsing
         {
-            
-            let (scalar, unit) = App::si_prefix(self.datastreams.net_info.net_in); 
-            self.net_in_str = format!("Current Incoming Traffic: {} {}b/s", (self.datastreams.net_info.net_in) / scalar, unit);
 
+            for (interface, net_in) in &self.datastreams.net_info.net_in {
+                let (scalar, unit) = App::si_prefix(*net_in); 
+                self.net_in_strs.insert(interface.to_string(), format!("[{}]: Current Incoming Traffic: {} {}b/s", interface.to_string(), *net_in / scalar, unit));
+                println!("[{}]: Current Incoming Traffic: {} {}b/s", interface.to_string(), *net_in / scalar, unit);
+            }
 
-            let (scalar, unit) = App::si_prefix(self.datastreams.net_info.net_out); 
-            self.net_out_str = format!("Current Outgoing Network Traffic: {} {}b/s", (self.datastreams.net_info.net_out) / scalar, unit);    
+            for (interface, net_out) in &self.datastreams.net_info.net_out {
+                let (scalar, unit) = App::si_prefix(*net_out); 
+                self.net_out_strs.insert(interface.to_string(), format!("[{}]: Current Outgoing Network Traffic: {} {}b/s", interface.to_string(), *net_out / scalar, unit));
+            }
         }
         #[cfg(feature = "battery-monitor")]
         {

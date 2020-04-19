@@ -27,7 +27,7 @@ impl SysDataStream for CPUMonitor {
     }
 
     fn poll(&mut self, system_info: &System) {
-        let cpus = system_info.get_processor_list();
+        let cpus = system_info.get_processors();
 
         self.cpu_core_info.clear();
         for cpu in &cpus[1..cpus.len()] {

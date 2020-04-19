@@ -38,7 +38,7 @@ impl <'a> AppDataStreams {
             cpu_info: SysDataStream::new(history_len, interpolation_len),
             #[cfg(feature = "gpu-monitor")]
             gpu_info: GPUDataStream::new(history_len, interpolation_len),
-            net_info: SysDataStream::new(history_len, interpolation_len),
+            net_info: SysDataStream::new(50, interpolation_len),
             mem_info: SysDataStream::new(history_len, interpolation_len),
             process_info: SysDataStream::new(history_len, interpolation_len),
             #[cfg(feature = "battery-monitor")]
