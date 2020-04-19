@@ -29,7 +29,7 @@ pub fn processes_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     ).block(Block::default().title("Processes").borders(Borders::ALL))
                             .header_style(Style::default().fg(Color::Yellow))
                             .widths(&[Constraint::Length(7), Constraint::Length(5), Constraint::Length(15), Constraint::Length(10)])
-                            .render(f, &area);  
+                            .render(f, area);  
 }
 
 fn bytes_to_mb(mem: Option<u64>) -> String {

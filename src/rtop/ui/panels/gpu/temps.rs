@@ -17,14 +17,14 @@ pub fn temp_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
         .block(
             Block::default()
                 .title("GPU Temperatures")
-                .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::Bold))
+                .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::BOLD))
                 .borders(Borders::ALL),
         )
         .x_axis(
             Axis::default()
                 .title("")
                 .style(Style::default().fg(Color::Gray))
-                .labels_style(Style::default().modifier(Modifier::Italic))
+                .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds(app.window)
                 .labels(&[""]),
         )
@@ -32,7 +32,7 @@ pub fn temp_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
             Axis::default()
                 .title("Temperature (°C)")
                 .style(Style::default().fg(Color::Gray))
-                .labels_style(Style::default().modifier(Modifier::Italic))
+                .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds([20.0, 130.0])
                 .labels(&["10", "50", "90", "130"]),
         )
