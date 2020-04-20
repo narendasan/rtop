@@ -39,11 +39,11 @@ fn _main() -> Result<(), Error> {
                     .init()
                     .unwrap();
 
-    info!("Start");
+    debug!("Start");
     #[cfg(feature = "gpu-monitor")]
-    info!("GPU Monitoring Enabled");
+    debug!("GPU Monitoring Enabled");
     #[cfg(feature = "battery-monitor")]
-    info!("Battery Monitoring Enabled");
+    debug!("Battery Monitoring Enabled");
     //Program
     let mut app = App::new(5000, 50)?;
     #[cfg(feature = "gpu-monitor")]
