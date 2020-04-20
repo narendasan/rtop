@@ -228,6 +228,7 @@ impl <'a> App<'a> {
             }
 
             for (id, power) in self.datastreams.gpu_info.power_usage_history.iter() {
+                //println!("{:?}", power);
                 let pairwise_data = power.iter()
                                          .enumerate()
                                          .map(|x| (x.0 as f64, x.1.clone() as f64))

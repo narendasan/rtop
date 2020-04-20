@@ -117,9 +117,10 @@ pub struct GPUMonitor {
     pub nvml_indices: HashMap<u32, u32>,
     pub clks: HashMap<u32, GPUClks>,
     pub clk_history: HashMap<u32, Vec<GPUClks>>, 
-    pub driver_version: String, 
+    pub driver_version: String,
+    pub cuda_version: String,
     pub power_usage: HashMap<u32, u32>,
-    pub power_usage_history: HashMap<u32, Vec<u32>>,
+    pub power_usage_history: HashMap<u32, Vec<f64>>,
     pub processes: Vec<GPUProcess>, //Device ID, (PID, Mem usage) 
     interpolation_len: u16,
     max_history_len: usize,
@@ -129,6 +130,7 @@ impl GPUDataStream for GPUMonitor {
     fn new(max_hist_len: usize, inter_len: u16) -> Self {        
         Self {
             driver_version: "UNKNOWN".to_string(),
+            cuda_version: "UNKNOWN".to_string(),
             total_memory: HashMap::new(),
             nvml_indices: HashMap::new(),
             names: HashMap::new(),
@@ -148,6 +150,7 @@ impl GPUDataStream for GPUMonitor {
 
     fn init(&mut self, nvml: &NVML) -> Result<(), Error> {
         self.driver_version = nvml.sys_driver_version()?;
+        self.cuda_version = GPUMonitor::cuda_version(nvml.sys_cuda_driver_version()?);
         let num_gpus = match nvml.device_count() {
             Ok(n) => n,
             Err(_e) => 0,
@@ -207,16 +210,16 @@ impl GPUDataStream for GPUMonitor {
                 
             let pow = gpu.power_usage()? / 1000; 
             self.power_usage.insert(*id, pow);
-            let power_history = self.power_usage_history.entry(*id).or_insert(vec![0; self.max_history_len]);
+            let power_history = self.power_usage_history.entry(*id).or_insert(vec![0.0; self.max_history_len]);
             while power_history.len() >= self.max_history_len {
                 power_history.remove(0);
             }
 
             let last_power = match power_history.last() {
                 Some(l) => l.clone(),
-                None => 0,
+                None => 0.0,
             };
-            power_history.extend_from_slice(utils::interpolate(last_power, pow, self.interpolation_len).as_slice());
+            power_history.extend_from_slice(utils::interpolate(last_power, pow as f64, self.interpolation_len).as_slice());
 
             let cl = gpu.running_compute_processes()?;
             let cl_processes = GPUProcess::proc_list(&cl, *id, GPUProcessType::Compute);
@@ -230,5 +233,11 @@ impl GPUDataStream for GPUMonitor {
             //println!("{:?}",  processes);
         }
         Ok(())      
+    }
+}
+
+impl GPUMonitor {
+    fn cuda_version(version: i32) -> String {
+        format!("{}.{}", nvml::cuda_driver_version_major(version), nvml::cuda_driver_version_minor(version))
     }
 }
