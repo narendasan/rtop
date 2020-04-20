@@ -42,6 +42,8 @@ fn _main() -> Result<(), Error> {
     info!("Start");
     #[cfg(feature = "gpu-monitor")]
     info!("GPU Monitoring Enabled");
+    #[cfg(feature = "battery-monitor")]
+    info!("Battery Monitoring Enabled");
     //Program
     let mut app = App::new(5000, 50)?;
     #[cfg(feature = "gpu-monitor")]
@@ -61,10 +63,10 @@ fn _main() -> Result<(), Error> {
     });
 
     thread::spawn(move || {
-        let tx = tx.clone();
+        let tx = tx;
         loop {
             tx.send(Event::Tick).unwrap();
-            thread::sleep(time::Duration::from_millis(2000));
+            thread::sleep(time::Duration::from_millis(1000));
         }
     });
 
@@ -77,27 +79,24 @@ fn _main() -> Result<(), Error> {
     terminal.hide_cursor()?;
 
     let clk_split = 0;
-    
+
     loop {
         let evt = rx.recv().unwrap();
         {
             match evt {
                 Event::Input(input) => {
-                    match app.input_handler(input) {
-                        Some(command) => {
-                            match command {
-                                Cmd::Quit => {break},
-                                //_ => (),
-                            }
-                        },
-                        None => (),
+                    if let Some(command) = app.input_handler(input) {
+                        match command {
+                            Cmd::Quit => {break},
+                            //_ => (),
+                        }
                     }
                 },
                 Event::Tick => {
-                    if clk_split % 1 == 0 {
+                    if clk_split % 2 == 0 {
                         app.update()?;
                     }
-                } 
+                }
             }
         }
 

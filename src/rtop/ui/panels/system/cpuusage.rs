@@ -9,7 +9,7 @@ use tui::style::{Color, Modifier, Style};
 
 pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let mut data = app.cpu_panel_memory.iter()
-                                    .map(|x| {(x.0.clone(), (x.1).0.clone(), (x.1).1.clone())})
+                                    .map(|x| {(*x.0, (x.1).0.clone(), (x.1).1.clone())})
                                     .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
     data.sort_by_key(|k| k.0);
 
@@ -20,7 +20,7 @@ pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Re
             .style(Style::default().fg(color_map(x.0)))
             .data(&x.2)
     }).collect::<Vec<Dataset>>();
-    
+
     let cpu_usage = Chart::default()
         .block(
             Block::default()
@@ -45,7 +45,7 @@ pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Re
                 .labels(&["0", "20", "40", "60", "80", "100"]),
         )
         .datasets(&datasets);
-    
+
     f.render_widget(cpu_usage, area);
 }
 

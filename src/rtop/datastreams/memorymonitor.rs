@@ -14,7 +14,7 @@ pub struct MemoryMonitor {
 }
 
 impl SysDataStream for MemoryMonitor {
-    fn new(max_hist_len: usize, inter_len: u16) -> Self {        
+    fn new(max_hist_len: usize, inter_len: u16) -> Self {
         Self {
             memory_usage: 0,
             total_memory: 10,
@@ -40,7 +40,7 @@ impl SysDataStream for MemoryMonitor {
             self.memory_usage_history.remove(0);
         }
         let last_mem = match self.memory_usage_history.last() {
-            Some(l) => l.clone(),
+            Some(l) => *l,
             None => 0.0,
         };
         self.memory_usage_history.extend_from_slice(utils::interpolate(last_mem, self.memory_usage as f64 / self.total_memory as f64, self.interpolation_len).as_slice());
@@ -49,7 +49,7 @@ impl SysDataStream for MemoryMonitor {
             self.swap_usage_history.remove(0);
         }
         let last_swap = match self.swap_usage_history.last() {
-            Some(l) => l.clone(),
+            Some(l) => *l,
             None => 0.0,
         };
         self.swap_usage_history.push(self.swap_usage as f64 / self.total_swap as f64);

@@ -34,6 +34,7 @@ fn render_sidebar<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
 
             disk_usage_panel(f, app, sub_areas[0]);
             network_info_panel(f, app, sub_areas[1]);
+            #[cfg(feature = "battery-monitor")]
             battery_panel(f, app, sub_areas[2]);
     } else {
         let sub_areas = Layout::default()

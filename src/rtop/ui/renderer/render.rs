@@ -17,6 +17,7 @@ pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App) -> Result<(), io::Erro
             .split(f.size());
 
         render_tab_bar(&mut f, app, sub_areas[0]);
+        #[allow(clippy::single_match)]
         match app.tabs.selection {
             0 => {
                 system_tab::render_system_tab(&mut f, app, sub_areas[1]);

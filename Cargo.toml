@@ -2,11 +2,21 @@
 name = "rtop"
 version = "0.1.0"
 authors = ["Naren Dasan <naren@narendasan.com>"]
-description = "A system monitor implemented in Rust"
+description = "A system monitor implemented in Rust, Monitors both system activity and GPU activity for NVIDIA GPUs"
 homepage = "https://github.com/narendasan/rtop"
 readme = "README.md"
-keywords = ["system", "monitor", "info"]
-catagories = [""]
+keywords = [
+    "system",
+    "monitor",
+    "info",
+    "top",
+    "system monitoring",
+    "monitoring",
+    "system monitor",
+    "gpu",
+    "gpu monitor",
+]
+categories = ["Development tools", ]
 license = "NCSA"
 edition = "2018"
 build = "build.rs"
@@ -22,7 +32,7 @@ battery-monitor = ["battery"]
 dirs = "1.0.5"
 
 [dependencies]
-termion = "1.5.4"
+termion = "1.5.5"
 log = "0.4.8"
 stderrlog = "0.4.3"
 tui = "0.9.1"

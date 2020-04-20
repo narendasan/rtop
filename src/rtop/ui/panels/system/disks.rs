@@ -15,14 +15,14 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let panel = Block::default()
         .borders(Borders::ALL)
         .title("Disk Usage");
-    
+
     let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
         .margin(1)
         .constraints(constraints.as_ref())
         .split(area);
-        
-    for drive_num in 0..app.datastreams.disk_info.disk_usage.len() {
+
+    for (drive_num, a) in sub_areas.iter().enumerate().take(app.datastreams.disk_info.disk_usage.len()) {
         let drive = &app.datastreams.disk_info.disk_usage[drive_num];
         let label = drive.0.clone() + &(" (%)").to_string();
         let usage = (drive.2 as f64 / drive.3 as f64) * 100.0;
@@ -30,10 +30,10 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
             .direction(Direction::Vertical)
             .margin(1)
             .constraints([Constraint::Percentage(50)].as_ref())
-            .split(sub_areas[drive_num]);
+            .split(*a);
 
         let data = [(&format!("{:.1}%", usage)[..], usage as u64)];
-        
+
         let chart = BarChart::default()
             .block(Block::default()
                    .title(&(label))
@@ -43,17 +43,17 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
             .bar_gap(0)
             .max(105)
             .style(Style::default()
-                   .fg(if usage < 60.0 { 
+                   .fg(if usage < 60.0 {
                        Color::LightGreen
-                   } else if usage < 85.0 { 
+                   } else if usage < 85.0 {
                        Color::LightYellow
                    } else {
                        Color::LightRed
                    }))
             .value_style(Style::default()
-                         .bg(if usage < 60.0 { 
+                         .bg(if usage < 60.0 {
                              Color::LightGreen
-                         } else if usage < 85.0 { 
+                         } else if usage < 85.0 {
                              Color::LightYellow
                          } else {
                              Color::LightRed

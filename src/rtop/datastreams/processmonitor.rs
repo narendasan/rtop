@@ -6,7 +6,7 @@ pub struct ProcessMonitor {
 }
 
 impl SysDataStream for ProcessMonitor {
-    fn new(_max_hist_len: usize, _inter_len: u16) -> Self {        
+    fn new(_max_hist_len: usize, _inter_len: u16) -> Self {
         Self {
             processes: Vec::new(),
         }
@@ -16,13 +16,13 @@ impl SysDataStream for ProcessMonitor {
         let processes = system_info.get_process_list();
         self.processes.clear();
         for (pid, process) in processes {
-            self.processes.push(ProcessMonitor::parse_process_info(pid, process));
+            self.processes.push(ProcessMonitor::parse_process_info(*pid, process));
         }
     }
 }
 
 impl ProcessMonitor {
-    fn parse_process_info(pid: &Pid, process: &Process) -> (u32, String, f32, u64) {
+    fn parse_process_info(pid: Pid, process: &Process) -> (u32, String, f32, u64) {
         (pid.as_u32(), String::from(process.name()), process.cpu_usage(), process.memory())
     }
 }
