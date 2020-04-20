@@ -1,10 +1,10 @@
 use crate::rtop::error::Error;
 use crate::rtop::datastreams::BatteryDataStream;
-use battery::{Manager, Battery};
+use battery::Manager;
 use battery::State as BatteryState;
-use battery::units::{Time, time::second, 
-                     ratio::percent, 
-                     thermodynamic_temperature::degree_celsius, 
+use battery::units::{Time, time::second,
+                     ratio::percent,
+                     thermodynamic_temperature::degree_celsius,
                      energy::watt_hour,
                      power::watt,
                      electric_potential::volt};
@@ -13,7 +13,7 @@ use battery::units::{Time, time::second,
 pub enum ChargingStatus {
     Discharging(u64),
     Charging(u64),
-    Full, 
+    Full,
     Empty,
     Unknown,
 }
@@ -26,8 +26,8 @@ pub struct BatteryMonitor {
     pub temp: String,
     pub kind: String,
     pub vendor: String,
-    pub serial: String, 
-    pub model: String, 
+    pub serial: String,
+    pub model: String,
     pub voltage: f32,
     pub power_draw: f32,
     pub energy: f32,
@@ -37,7 +37,7 @@ pub struct BatteryMonitor {
 }
 
 impl BatteryDataStream for BatteryMonitor {
-    fn new(max_hist_len: usize, inter_len: u16) -> Self {
+    fn new(_max_hist_len: usize, _inter_len: u16) -> Self {
         Self {
             battery_lvl: 100.0,
             cycle_count: String::new(),
@@ -45,8 +45,8 @@ impl BatteryDataStream for BatteryMonitor {
             temp:String::new(),
             kind: String::new(),
             vendor: String::new(),
-            serial: String::new(), 
-            model: String::new(), 
+            serial: String::new(),
+            model: String::new(),
             voltage: 0.0,
             power_draw: 0.0,
             energy: 0.0,
@@ -83,12 +83,12 @@ impl BatteryDataStream for BatteryMonitor {
             };
             self.battery_lvl = battery.state_of_charge().get::<percent>() as f32;
             self.cycle_count = match battery.cycle_count() {
-                Some(count) => count.to_string(), 
+                Some(count) => count.to_string(),
                 None => "Unknown".to_string(),
             };
             self.health = battery.state_of_health().get::<percent>() as f32;
             self.temp = match battery.temperature() {
-                Some(temp) => format!("{:.2}°C", temp.get::<degree_celsius>() as f32), 
+                Some(temp) => format!("{:.2}°C", temp.get::<degree_celsius>() as f32),
                 None => "Unknown".to_string(),
             };
             self.kind = battery.technology().to_string();
