@@ -24,11 +24,22 @@ pub fn render_gpu_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
 
 fn render_charts<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let sub_areas = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(33), Constraint::Percentage(33), Constraint::Percentage(33)].as_ref())
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .split(area);
-        
-    mem_history_panel(f, app, sub_areas[0]);
-    temp_history_panel(f, app, sub_areas[1]);
-    power_history_panel(f, app, sub_areas[2]);
+
+    render_half(f, app, sub_areas[0], vec![&utilization_history_panel, &mem_history_panel]);
+    render_half(f, app, sub_areas[1], vec![&temp_history_panel, &power_history_panel]);
 }
+
+fn render_half<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect, panels: Vec<&dyn Fn(&mut Frame<B>, &App, Rect)>) {
+    let sub_areas = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .split(area);
+
+    for (p, a) in panels.iter().zip(sub_areas.iter()) {
+        p(f, app, *a);
+    }
+}
+        

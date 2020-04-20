@@ -8,8 +8,8 @@ use tui::symbols::Marker;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
 
-pub fn temp_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    let mut data = app.gpu_temp_panel_memory.iter().map(|x| {
+pub fn utilization_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+    let mut data = app.gpu_util_panel_memory.iter().map(|x| {
         (x.0.clone(), (x.1).0.clone(), (x.1).1.clone())
     }).collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
 
@@ -23,10 +23,10 @@ pub fn temp_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
             .data(&x.2)
     }).collect::<Vec<Dataset>>();
     
-    let temp = Chart::default()
+    let power = Chart::default()
         .block(
             Block::default()
-                .title("GPU Temperatures")
+                .title("GPU Utilization")
                 .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::BOLD))
                 .borders(Borders::ALL),
         ).x_axis(
@@ -38,12 +38,12 @@ pub fn temp_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
                 .labels(&[""]),
         ).y_axis(
             Axis::default()
-                .title("Temperature (°C)")
+                .title("Utilization (%)")
                 .style(Style::default().fg(Color::Gray))
                 .labels_style(Style::default().modifier(Modifier::ITALIC))
-                .bounds([20.0, 130.0])
-                .labels(&["10", "50", "90", "130"]),
+                .bounds([0.0, 100.0])
+                .labels(&["0", "20", "40", "60", "80", "100"]),
         ).datasets(&datasets);
     
-    f.render_widget(temp, area);
+    f.render_widget(power, area);
 }

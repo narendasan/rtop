@@ -1,4 +1,5 @@
 use crate::rtop::app::App;
+use crate::rtop::ui::panels::gpu::utils::color_map;
 
 use tui::Frame;
 use tui::backend::Backend;
@@ -48,16 +49,4 @@ pub fn mem_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
         .datasets(&datasets);
 
     f.render_widget(mem_usage, area);
-}
-
-
-
-fn color_map(key: u32) -> Color {
-    match key % 10 {
-        0 => {Color::LightGreen},
-        1 => {Color::LightYellow},
-        2 => {Color::LightRed},
-        3 => {Color::LightBlue},
-        _ => {Color::White},
-    }
 }
