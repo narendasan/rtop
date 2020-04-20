@@ -33,10 +33,8 @@ pub fn battery_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
                } else if app.battery_level < 40.0 {
                    Color::LightYellow
                } else {
-                   Color::LightRed
+                   Color::LightGreen
                }));
-
-    f.render_widget(battery_chart, sub_areas[0]);
 
     let content = format!("\n{}\n", app.battery_status);
     let text = [Text::raw(content.as_str())];
@@ -45,6 +43,7 @@ pub fn battery_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
         .wrap(true);
 
     f.render_widget(panel, area);
+    f.render_widget(battery_chart, sub_areas[0]);
     f.render_widget(status, sub_areas[1]);
 }
 
