@@ -12,7 +12,7 @@ keywords = [
     "usage",
     "gpu",
 ]
-categories = ["Development Tools"]
+categories = ["development-tools"]
 license = "NCSA"
 edition = "2018"
 build = "build.rs"
