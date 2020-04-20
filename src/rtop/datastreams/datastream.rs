@@ -3,6 +3,7 @@ use sysinfo::System as SysInfoSystem;
 use nvml_wrapper::NVML;
 #[cfg(feature = "battery-monitor")]
 use battery::Manager;
+#[allow(unused_imports)]
 use crate::rtop::error::Error;
 
 pub trait SysDataStream {
