@@ -9,11 +9,8 @@ keywords = [
     "system",
     "monitor",
     "info",
-    "top",
     "usage",
-    "monitoring",
     "gpu",
-    "nvidia"
 ]
 categories = ["Development tools", ]
 license = "NCSA"
