@@ -1,6 +1,6 @@
 [package]
 name = "rtop"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Naren Dasan <naren@narendasan.com>"]
 description = "A system monitor implemented in Rust, Monitors both system activity and GPU activity for NVIDIA GPUs"
 homepage = "https://github.com/narendasan/rtop"
