@@ -3,9 +3,9 @@ use std::error;
 use std::fmt;
 
 #[cfg(feature = "gpu-monitor")]
-use nvml_wrapper::error::Error as nvmlError; 
+use nvml_wrapper::error::NvmlError as nvmlError;
 #[cfg(feature = "battery-monitor")]
-use battery::errors::Error as batteryError; 
+use battery::errors::Error as batteryError;
 
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub enum Error {
     NVMLError(nvmlError),
     #[cfg(feature = "battery-monitor")]
     BatteryMonitorError(batteryError),
-} 
+}
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -24,7 +24,7 @@ impl fmt::Display for Error {
             #[cfg(feature = "gpu-monitor")]
             Error::NVMLError(ref err) => write!(f, "NVML error: {}", err),
             #[cfg(feature = "battery-monitor")]
-            Error::BatteryMonitorError(ref err) => write!(f, "Battery Monitor error: {}", err), 
+            Error::BatteryMonitorError(ref err) => write!(f, "Battery Monitor error: {}", err),
         }
     }
 }
