@@ -6,29 +6,29 @@ use nvml_wrapper::NVML;
 use battery::Manager;
 
 use crate::rtop::error::Error;
-use crate::rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor, 
+use crate::rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor,
                               CPUMonitor, NetworkMonitor, ProcessMonitor};
 
 #[cfg(feature = "battery-monitor")]
 use crate::rtop::datastreams::{BatteryDataStream, BatteryMonitor};
-#[cfg(feature = "gpu-monitor")] 
+#[cfg(feature = "gpu-monitor")]
 use crate::rtop::datastreams::{GPUDataStream, GPUMonitor};
 
 pub struct AppDataStreams {
     pub disk_info: DiskMonitor,
     pub cpu_info: CPUMonitor,
-    #[cfg(feature = "gpu-monitor")] 
+    #[cfg(feature = "gpu-monitor")]
     pub gpu_info: GPUMonitor,
     pub net_info: NetworkMonitor,
     pub mem_info: MemoryMonitor,
     pub process_info: ProcessMonitor,
-    #[cfg(feature = "battery-monitor")] 
+    #[cfg(feature = "battery-monitor")]
     pub battery_info: BatteryMonitor,
     pub sys_info_src: SysInfoSystem,
     #[cfg(feature = "gpu-monitor")]
     pub gpu_info_src: NVML,
-    #[cfg(feature = "battery-monitor")] 
-    pub battery_info_src: Manager, 
+    #[cfg(feature = "battery-monitor")]
+    pub battery_info_src: Manager,
 }
 
 impl <'a> AppDataStreams {

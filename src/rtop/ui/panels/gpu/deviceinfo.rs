@@ -12,15 +12,18 @@ pub fn device_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
         ["Device", "Name", "Bus ID", "Memory", "VBIOS", "PCIe Connection", "Max SM Clock", "Max Memory Clock", "Power Limit"].iter(),
         app.datastreams.gpu_info.device_info.iter().map(|(_, gpu)| {
             let style = &default_style;
-            Row::StyledData(vec![gpu.id.to_string(), 
-                                 gpu.name.clone(), 
-                                 gpu.bus_id.clone(), 
-                                 bytes_to_gb(gpu.max_memory), 
+            Row::StyledData(vec![gpu.id.to_string(),
+                                 gpu.name.clone(),
+                                 gpu.bus_id.clone(),
+                                 bytes_to_gb(gpu.max_memory),
                                  gpu.vbios.clone(),
                                  format!("{}x", gpu.num_pcie_lanes),
                                  format!("{} MHz", gpu.max_sm_clock),
                                  format!("{} MHz", gpu.max_mem_clock),
-                                 format!("{} W", gpu.power_limit),
+                                 match gpu.power_limit {
+                                    0 => "Unknown".to_string(),
+                                    _ => format!("{} W", gpu.power_limit),
+                                 },
             ].into_iter(), *style)
         }),
     ).block(Block::default().title("Devices").borders(Borders::ALL))
@@ -37,9 +40,9 @@ pub fn device_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
             Constraint::Length(20),
         ]);
 
-    f.render_widget(device_table, area);  
+    f.render_widget(device_table, area);
 }
 
 fn bytes_to_gb(mem: u64) -> String {
-    format!("{:.0} GB", (mem / 1000000000)) 
+    format!("{:.0} GB", (mem / 1000000000))
 }
