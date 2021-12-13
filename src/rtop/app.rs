@@ -265,16 +265,16 @@ impl <'a> App<'a> {
     fn si_prefix(num: u64) -> (u64, String) {
         let n = num as f64;
         if n == 0.0 {
-            return (1 as u64, String::from(""));
+            return (1_u64, String::from(""));
         }
         match n.log(10.0) as u64 {
-            0 | 1 | 2 => ((10 as u64).pow(0), String::from("")),
-            3 | 4 | 5 => ((10 as u64).pow(3), String::from("K")),
-            6 | 7 | 8 => ((10 as u64).pow(6), String::from("M")),
-            9 | 10 | 11 => ((10 as u64).pow(9), String::from("G")),
-            12 | 13 | 14 => ((10 as u64).pow(12), String::from("T")),
-            15 | 16 | 17 => ((10 as u64).pow(15), String::from("P")),
-            _ => ((10 as u64).pow(18), String::from("E")),
+            0 | 1 | 2 => (10_u64.pow(0), String::from("")),
+            3 | 4 | 5 => (10_u64.pow(3), String::from("K")),
+            6 | 7 | 8 => (10_u64.pow(6), String::from("M")),
+            9 | 10 | 11 => (10_u64.pow(9), String::from("G")),
+            12 | 13 | 14 => (10_u64.pow(12), String::from("T")),
+            15 | 16 | 17 => (10_u64.pow(15), String::from("P")),
+            _ => (10_u64.pow(18), String::from("E")),
         }
     }
 }

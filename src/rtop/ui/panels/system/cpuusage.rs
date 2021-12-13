@@ -44,7 +44,7 @@ pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Re
                 .bounds([0.0, 1.0])
                 .labels(&["0", "20", "40", "60", "80", "100"]),
         )
-        .datasets(&datasets);
+        .datasets(datasets);
 
     f.render_widget(cpu_usage, area);
 }
