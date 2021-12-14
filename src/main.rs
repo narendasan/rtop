@@ -75,8 +75,8 @@ fn _main() -> Result<(), Error> {
     let stdout = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
-    terminal.clear()?;
-    terminal.hide_cursor()?;
+    //terminal.clear()?;
+    //terminal.hide_cursor()?;
 
     let clk_split = 0;
 
@@ -99,10 +99,9 @@ fn _main() -> Result<(), Error> {
                 }
             }
         }
-
         render(&mut terminal, &app)?;
     }
-    terminal.show_cursor().unwrap();
-    terminal.clear().unwrap();
+    //terminal.show_cursor()?;
+    //terminal.clear()?;
     Ok(())
 }

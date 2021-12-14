@@ -6,6 +6,7 @@ use tui::widgets::{Axis, Block, Borders, Chart, Dataset};
 use tui::symbols::Marker;
 use tui::layout::Rect;
 use tui::style::{Color, Modifier, Style};
+use tui::text::Span;
 
 pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let mut data = app.cpu_panel_memory.iter()
@@ -13,7 +14,7 @@ pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Re
                                     .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
     data.sort_by_key(|k| k.0);
 
-    let datasets = &data.iter().map(|x| {
+    let datasets = data.iter().map(|x| {
         Dataset::default()
             .name(&x.1)
             .marker(Marker::Braille)
@@ -21,30 +22,28 @@ pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Re
             .data(&x.2)
     }).collect::<Vec<Dataset>>();
 
-    let cpu_usage = Chart::default()
+    let cpu_usage = Chart::new(datasets)
         .block(
             Block::default()
-                .title("CPU Usage")
-                .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::BOLD))
+                .title(Span::styled("CPU Usage", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)))
                 .borders(Borders::ALL),
         )
         .x_axis(
             Axis::default()
                 .title("")
                 .style(Style::default().fg(Color::Gray))
-                .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds(app.window)
-                .labels(&[""]),
+                .labels(vec![Span::styled("", Style::default().add_modifier(Modifier::ITALIC))])
         )
         .y_axis(
             Axis::default()
                 .title("Usage (%)")
                 .style(Style::default().fg(Color::Gray))
-                .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds([0.0, 1.0])
-                .labels(&["0", "20", "40", "60", "80", "100"]),
-        )
-        .datasets(datasets);
+                .labels(["0", "20", "40", "60", "80", "100"].iter()
+                    .map(|v| Span::styled(v.to_string(), Style::default().add_modifier(Modifier::ITALIC)))
+                    .collect::<Vec<Span>>())
+        );
 
     f.render_widget(cpu_usage, area);
 }

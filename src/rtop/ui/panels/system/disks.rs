@@ -5,10 +5,11 @@ use tui::backend::Backend;
 use tui::widgets::{Block, BarChart, Borders};
 use tui::layout::{Layout, Direction, Rect, Constraint};
 use tui::style::{Color, Modifier, Style};
+use tui::text::Span;
 
 pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let num_drives = app.datastreams.disk_info.disk_usage.len() as u16;
-    let gauge_width: u16 = 100 / num_drives;
+    let gauge_width: u16 = 100 / (num_drives + 1);
     let constraints = (0..num_drives).map(|_| {Constraint::Percentage(gauge_width)})
                                 .collect::<Vec<Constraint>>();
 
@@ -36,7 +37,7 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
 
         let chart = BarChart::default()
             .block(Block::default()
-                   .title(&(label))
+                   .title(Span::raw(&label))
                    .borders(Borders::NONE))
             .data(&data)
             .bar_width(5)
@@ -57,10 +58,10 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
                              Color::LightYellow
                          } else {
                              Color::LightRed
-                         }).modifier(Modifier::BOLD));
+                         }).add_modifier(Modifier::BOLD));
 
-        f.render_widget(panel, area);
         f.render_widget(chart, chunk[0]);
     }
+    f.render_widget(panel, area);
 }
 

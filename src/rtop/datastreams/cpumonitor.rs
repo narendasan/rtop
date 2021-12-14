@@ -27,7 +27,7 @@ impl SysDataStream for CPUMonitor {
     }
 
     fn poll(&mut self, system_info: &System) {
-        let cpus = system_info.get_processor_list();
+        let cpus = system_info.processors();
 
         self.cpu_core_info.clear();
         for cpu in &cpus[1..cpus.len()] {
@@ -46,13 +46,13 @@ impl SysDataStream for CPUMonitor {
                 history.extend_from_slice(utils::interpolate::<f32>(last, entry.1, self.interpolation_len).as_slice());
             }
         }
-        self.cpu_usage = cpus[0].get_cpu_usage();
+        self.cpu_usage = cpus[0].cpu_usage();
     }
 }
 
 impl CPUMonitor {
     fn parse_cpu_info(cpu: &Processor) -> (String, f32) {
-        (String::from(cpu.get_name()), cpu.get_cpu_usage())
+        (String::from(cpu.name()), cpu.cpu_usage())
     }
 }
 

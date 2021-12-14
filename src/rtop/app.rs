@@ -151,7 +151,7 @@ impl <'a> App<'a> {
 
                 let core_label = core_num.to_string();
                 core_name = format!("Core: {} ({:.2}%)", core_label,
-                                                      (self.datastreams.cpu_info.cpu_core_info[(core_num) as usize].1 * 100.0).to_string());
+                                                      (self.datastreams.cpu_info.cpu_core_info[(core_num) as usize - 1].1 * 100.0).to_string());
                 self.cpu_panel_memory.insert(core_num, (core_name, pairwise_data));
             }
         }

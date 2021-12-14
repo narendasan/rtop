@@ -2,9 +2,10 @@ use crate::rtop::app::App;
 
 use tui::Frame;
 use tui::backend::Backend;
-use tui::widgets::{Block, Gauge, Paragraph, Text, Borders};
+use tui::widgets::{Block, Gauge, Paragraph, Wrap, Borders};
 use tui::layout::{Layout, Direction, Rect, Constraint};
 use tui::style::{Color, Style};
+use tui::text::Text;
 
 #[cfg(feature = "battery-monitor")]
 pub fn battery_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
@@ -37,10 +38,10 @@ pub fn battery_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
                }));
 
     let content = format!("\n{}\n", app.battery_status);
-    let text = [Text::raw(content.as_str())];
-    let status = Paragraph::new(text.iter())
+    let text = Text::from(content.as_str());
+    let status = Paragraph::new(text)
         .block(Block::default().borders(Borders::NONE))
-        .wrap(true);
+        .wrap(Wrap {trim: false});
 
     f.render_widget(panel, area);
     f.render_widget(battery_chart, sub_areas[0]);

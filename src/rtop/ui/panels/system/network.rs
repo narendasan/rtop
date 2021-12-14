@@ -4,6 +4,7 @@ use tui::backend::Backend;
 use tui::widgets::{Block, Borders, Sparkline};
 use tui::layout::{Direction, Layout, Rect, Constraint};
 use tui::style::{Color, Style};
+use tui::text::Span;
 
 pub fn network_info_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let panel = Block::default()
@@ -17,13 +18,13 @@ pub fn network_info_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
         .split(area);
 
     let net_in = Sparkline::default()
-        .block(Block::default().title(&app.net_in_str))
+        .block(Block::default().title(Span::raw(&app.net_in_str)))
         .style(Style::default().fg(Color::Green))
         .data(&app.datastreams.net_info.net_in_history)
         .max(1_000_000);
 
     let net_out = Sparkline::default()
-        .block(Block::default().title(&app.net_out_str))
+        .block(Block::default().title(Span::raw(&app.net_out_str)))
         .style(Style::default().fg(Color::Green))
         .data(&app.datastreams.net_info.net_out_history)
         .max(1_000_000);
