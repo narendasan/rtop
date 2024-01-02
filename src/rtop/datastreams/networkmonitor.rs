@@ -1,21 +1,20 @@
-use sysinfo::{System, SystemExt, NetworkExt};
 use crate::rtop::datastreams::datastream::SysDataStream;
-
+use sysinfo::{NetworkExt, System, SystemExt};
 
 pub struct NetworkMonitor {
     pub net_in_history: Vec<u64>,
-    pub net_out_history: Vec<u64>, 
+    pub net_out_history: Vec<u64>,
     pub net_in: u64,
-    pub net_out: u64, 
+    pub net_out: u64,
     max_sparkline_len: usize,
 }
 
 impl SysDataStream for NetworkMonitor {
-    fn new(_max_hist_len: usize, _inter_len: u16) -> Self {        
+    fn new(_max_hist_len: usize, _inter_len: u16) -> Self {
         Self {
             net_in_history: Vec::new(),
-            net_out_history: Vec::new(), 
-            net_in: 0, //in bits
+            net_out_history: Vec::new(),
+            net_in: 0,  //in bits
             net_out: 0, //in bits
             max_sparkline_len: 50,
         }

@@ -1,5 +1,5 @@
-use sysinfo::{Pid, AsU32, Process, System, ProcessExt, SystemExt};
 use crate::rtop::datastreams::datastream::SysDataStream;
+use sysinfo::{AsU32, Pid, Process, ProcessExt, System, SystemExt};
 
 pub struct ProcessMonitor {
     pub processes: Vec<(u32, String, f32, u64)>, //PID, Command, CPU. mem (kb)
@@ -16,13 +16,19 @@ impl SysDataStream for ProcessMonitor {
         let processes = system_info.get_process_list();
         self.processes.clear();
         for (pid, process) in processes {
-            self.processes.push(ProcessMonitor::parse_process_info(*pid, process));
+            self.processes
+                .push(ProcessMonitor::parse_process_info(*pid, process));
         }
     }
 }
 
 impl ProcessMonitor {
     fn parse_process_info(pid: Pid, process: &Process) -> (u32, String, f32, u64) {
-        (pid.as_u32(), String::from(process.name()), process.cpu_usage(), process.memory())
+        (
+            pid.as_u32(),
+            String::from(process.name()),
+            process.cpu_usage(),
+            process.memory(),
+        )
     }
 }

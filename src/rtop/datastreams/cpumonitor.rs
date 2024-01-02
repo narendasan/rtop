@@ -1,8 +1,7 @@
 use std::collections::HashMap;
-use sysinfo::{System, SystemExt, Processor, ProcessorExt};
+use sysinfo::{Processor, ProcessorExt, System, SystemExt};
 
 use crate::rtop::datastreams::{datastream::SysDataStream, utils};
-
 
 pub struct CPUMonitor {
     pub cpu_usage: f32,
@@ -22,7 +21,7 @@ impl SysDataStream for CPUMonitor {
             cpu_usage_history: HashMap::new(),
             cpu_temp: None,
             max_history_len: max_hist_len,
-            interpolation_len: inter_len
+            interpolation_len: inter_len,
         }
     }
 
@@ -35,7 +34,10 @@ impl SysDataStream for CPUMonitor {
             self.cpu_core_info.push(info);
             if let Some(entry) = self.cpu_core_info.last() {
                 #[allow(clippy::or_fun_call)]
-                let history = self.cpu_usage_history.entry(entry.0.clone()).or_insert(vec![0.0; self.max_history_len]);
+                let history = self
+                    .cpu_usage_history
+                    .entry(entry.0.clone())
+                    .or_insert(vec![0.0; self.max_history_len]);
                 while history.len() >= self.max_history_len {
                     history.remove(0);
                 }
@@ -43,7 +45,9 @@ impl SysDataStream for CPUMonitor {
                     Some(l) => *l,
                     None => 0.0,
                 };
-                history.extend_from_slice(utils::interpolate::<f32>(last, entry.1, self.interpolation_len).as_slice());
+                history.extend_from_slice(
+                    utils::interpolate::<f32>(last, entry.1, self.interpolation_len).as_slice(),
+                );
             }
         }
         self.cpu_usage = cpus[0].get_cpu_usage();
@@ -55,4 +59,3 @@ impl CPUMonitor {
         (String::from(cpu.get_name()), cpu.get_cpu_usage())
     }
 }
-

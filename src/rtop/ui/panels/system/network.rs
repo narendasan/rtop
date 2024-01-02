@@ -1,19 +1,24 @@
 use crate::rtop::app::App;
-use tui::Frame;
 use tui::backend::Backend;
-use tui::widgets::{Block, Borders, Sparkline};
-use tui::layout::{Direction, Layout, Rect, Constraint};
+use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Style};
+use tui::widgets::{Block, Borders, Sparkline};
+use tui::Frame;
 
 pub fn network_info_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    let panel = Block::default()
-        .borders(Borders::ALL)
-        .title("Network");
+    let panel = Block::default().borders(Borders::ALL).title("Network");
 
     let sub_areas = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints([Constraint::Percentage(40), Constraint::Percentage(20), Constraint::Percentage(40)].as_ref())
+        .constraints(
+            [
+                Constraint::Percentage(40),
+                Constraint::Percentage(20),
+                Constraint::Percentage(40),
+            ]
+            .as_ref(),
+        )
         .split(area);
 
     let net_in = Sparkline::default()

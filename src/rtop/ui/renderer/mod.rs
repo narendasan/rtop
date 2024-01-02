@@ -1,6 +1,6 @@
-mod render;
-mod system_tab;
 #[cfg(feature = "gpu-monitor")]
 mod gpu_tab;
+mod render;
+mod system_tab;
 
-pub use self::render::render as render;
+pub use self::render::render;
