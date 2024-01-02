@@ -10,7 +10,7 @@ pub struct MemoryMonitor {
     pub swap_usage_history: Vec<f64>,
     pub total_swap: u64,
     max_history_len: usize,
-    interpolation_len: u16
+    interpolation_len: u16,
 }
 
 impl SysDataStream for MemoryMonitor {
@@ -23,7 +23,7 @@ impl SysDataStream for MemoryMonitor {
             total_swap: 10,
             swap_usage_history: vec![0.0; max_hist_len],
             max_history_len: max_hist_len,
-            interpolation_len: inter_len
+            interpolation_len: inter_len,
         }
     }
 
@@ -43,7 +43,14 @@ impl SysDataStream for MemoryMonitor {
             Some(l) => *l,
             None => 0.0,
         };
-        self.memory_usage_history.extend_from_slice(utils::interpolate(last_mem, self.memory_usage as f64 / self.total_memory as f64, self.interpolation_len).as_slice());
+        self.memory_usage_history.extend_from_slice(
+            utils::interpolate(
+                last_mem,
+                self.memory_usage as f64 / self.total_memory as f64,
+                self.interpolation_len,
+            )
+            .as_slice(),
+        );
 
         while self.swap_usage_history.len() >= self.max_history_len {
             self.swap_usage_history.remove(0);
@@ -52,7 +59,15 @@ impl SysDataStream for MemoryMonitor {
             Some(l) => *l,
             None => 0.0,
         };
-        self.swap_usage_history.push(self.swap_usage as f64 / self.total_swap as f64);
-        self.swap_usage_history.extend_from_slice(utils::interpolate(last_swap, self.swap_usage as f64 / self.total_swap as f64, self.interpolation_len).as_slice());
+        self.swap_usage_history
+            .push(self.swap_usage as f64 / self.total_swap as f64);
+        self.swap_usage_history.extend_from_slice(
+            utils::interpolate(
+                last_swap,
+                self.swap_usage as f64 / self.total_swap as f64,
+                self.interpolation_len,
+            )
+            .as_slice(),
+        );
     }
 }

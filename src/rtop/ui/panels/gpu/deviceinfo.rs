@@ -1,44 +1,61 @@
 use crate::rtop::app::App;
 
-use tui::Frame;
 use tui::backend::Backend;
-use tui::widgets::{Block, Borders, Row, Table};
-use tui::layout::{Rect, Constraint};
+use tui::layout::{Constraint, Rect};
 use tui::style::{Color, Style};
+use tui::widgets::{Block, Borders, Row, Table};
+use tui::Frame;
 
 pub fn device_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let default_style = Style::default().fg(Color::Cyan);
     let device_table = Table::new(
-        ["Device", "Name", "Bus ID", "Memory", "VBIOS", "PCIe Connection", "Max SM Clock", "Max Memory Clock", "Power Limit"].iter(),
+        [
+            "Device",
+            "Name",
+            "Bus ID",
+            "Memory",
+            "VBIOS",
+            "PCIe Connection",
+            "Max SM Clock",
+            "Max Memory Clock",
+            "Power Limit",
+        ]
+        .iter(),
         app.datastreams.gpu_info.device_info.iter().map(|(_, gpu)| {
             let style = &default_style;
-            Row::StyledData(vec![gpu.id.to_string(),
-                                 gpu.name.clone(),
-                                 gpu.bus_id.clone(),
-                                 bytes_to_gb(gpu.max_memory),
-                                 gpu.vbios.clone(),
-                                 format!("{}x", gpu.num_pcie_lanes),
-                                 format!("{} MHz", gpu.max_sm_clock),
-                                 format!("{} MHz", gpu.max_mem_clock),
-                                 match gpu.power_limit {
-                                    0 => "Unknown".to_string(),
-                                    _ => format!("{} W", gpu.power_limit),
-                                 },
-            ].into_iter(), *style)
+            Row::StyledData(
+                vec![
+                    gpu.id.to_string(),
+                    gpu.name.clone(),
+                    gpu.bus_id.clone(),
+                    bytes_to_gb(gpu.max_memory),
+                    gpu.vbios.clone(),
+                    format!("{}x", gpu.num_pcie_lanes),
+                    format!("{} MHz", gpu.max_sm_clock),
+                    format!("{} MHz", gpu.max_mem_clock),
+                    match gpu.power_limit {
+                        0 => "Unknown".to_string(),
+                        _ => format!("{} W", gpu.power_limit),
+                    },
+                ]
+                .into_iter(),
+                *style,
+            )
         }),
-    ).block(Block::default().title("Devices").borders(Borders::ALL))
-        .header_style(Style::default().fg(Color::Yellow))
-        .widths(&[
-            Constraint::Length(3),
-            Constraint::Length(25),
-            Constraint::Length(20),
-            Constraint::Length(20),
-            Constraint::Length(20),
-            Constraint::Length(20),
-            Constraint::Length(20),
-            Constraint::Length(20),
-            Constraint::Length(20),
-        ]);
+    )
+    .block(Block::default().title("Devices").borders(Borders::ALL))
+    .header_style(Style::default().fg(Color::Yellow))
+    .widths(&[
+        Constraint::Length(3),
+        Constraint::Length(25),
+        Constraint::Length(20),
+        Constraint::Length(20),
+        Constraint::Length(20),
+        Constraint::Length(20),
+        Constraint::Length(20),
+        Constraint::Length(20),
+        Constraint::Length(20),
+    ]);
 
     f.render_widget(device_table, area);
 }

@@ -1,12 +1,11 @@
-use std::io;
 use std::error;
 use std::fmt;
+use std::io;
 
-#[cfg(feature = "gpu-monitor")]
-use nvml_wrapper::error::NvmlError as nvmlError;
 #[cfg(feature = "battery-monitor")]
 use battery::errors::Error as batteryError;
-
+#[cfg(feature = "gpu-monitor")]
+use nvml_wrapper::error::NvmlError as nvmlError;
 
 #[derive(Debug)]
 pub enum Error {

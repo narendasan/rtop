@@ -1,3 +1,3 @@
-pub mod tabs;
-pub mod renderer;
 mod panels;
+pub mod renderer;
+pub mod tabs;
