@@ -18,7 +18,7 @@ pub fn disk_usage_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
         .margin(1)
-        .constraints(constraints.as_ref())
+        .constraints(constraints)
         .split(area);
 
     for (drive_num, a) in sub_areas
