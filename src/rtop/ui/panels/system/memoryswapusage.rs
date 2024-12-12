@@ -1,50 +1,56 @@
 use crate::rtop::app::App;
 
-use tui::Frame;
-use tui::backend::Backend;
-use tui::widgets::{Axis, Block, Borders, Chart, Dataset};
-use tui::symbols::Marker;
-use tui::layout::Rect;
-use tui::style::{Color, Modifier, Style};
+use ratatui::layout::Rect;
+use ratatui::style::{Color, Modifier, Style, Stylize};
+use ratatui::symbols::Marker;
+use ratatui::text::Span;
+use ratatui::widgets::{Axis, Block, Borders, Chart, Dataset};
+use ratatui::Frame;
 
-pub fn mem_and_swap_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    let datasets = [
+pub fn mem_and_swap_history_panel(f: &mut Frame, app: &App, area: Rect) {
+    let datasets = vec![
         Dataset::default()
-            .name(&app.mem_usage_str)
+            .name(app.mem_usage_str.clone())
             .marker(Marker::Braille)
             .style(Style::default().fg(Color::LightRed))
             .data(&app.mem_panel_memory),
         Dataset::default()
-            .name(&app.swap_usage_str)
+            .name(app.swap_usage_str.clone())
             .marker(Marker::Braille)
             .style(Style::default().fg(Color::LightCyan))
-            .data(&app.swap_panel_memory)
+            .data(&app.swap_panel_memory),
     ];
-    
-    let mem_history_panel = Chart::default()
+
+    let mem_history_panel = Chart::new(datasets.clone())
         .block(
             Block::default()
                 .title("Memory and Swap Usage")
-                .title_style(Style::default().fg(Color::Cyan).modifier(Modifier::BOLD))
+                .title_style(
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                )
                 .borders(Borders::ALL),
         )
         .x_axis(
             Axis::default()
                 .title("")
                 .style(Style::default().fg(Color::Gray))
-                .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds(app.window)
-                .labels(&[""]),
+                .labels(["".italic()]),
         )
         .y_axis(
             Axis::default()
                 .title("Usage (%)")
                 .style(Style::default().fg(Color::Gray))
-                .labels_style(Style::default().modifier(Modifier::ITALIC))
                 .bounds([0.0, 1.0])
-                .labels(&["0", "20", "40", "60", "80", "100"]),
-        )
-        .datasets(&datasets);
+                .labels(
+                    ["0", "20", "40", "60", "80", "100"]
+                        .into_iter()
+                        .map(|x| x.italic())
+                        .collect::<Vec<Span>>(),
+                ),
+        );
 
     f.render_widget(mem_history_panel, area);
 }

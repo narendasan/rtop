@@ -1,8 +1,7 @@
 use std::collections::HashMap;
-use sysinfo::{System, SystemExt, Processor, ProcessorExt};
+use sysinfo::{Cpu, System};
 
 use crate::rtop::datastreams::{datastream::SysDataStream, utils};
-
 
 pub struct CPUMonitor {
     pub cpu_usage: f32,
@@ -22,20 +21,23 @@ impl SysDataStream for CPUMonitor {
             cpu_usage_history: HashMap::new(),
             cpu_temp: None,
             max_history_len: max_hist_len,
-            interpolation_len: inter_len
+            interpolation_len: inter_len,
         }
     }
 
     fn poll(&mut self, system_info: &System) {
-        let cpus = system_info.get_processor_list();
+        let cpus = system_info.cpus();
 
         self.cpu_core_info.clear();
-        for cpu in &cpus[1..cpus.len()] {
+        for cpu in &cpus[0..cpus.len()] {
             let info = CPUMonitor::parse_cpu_info(cpu);
             self.cpu_core_info.push(info);
             if let Some(entry) = self.cpu_core_info.last() {
                 #[allow(clippy::or_fun_call)]
-                let history = self.cpu_usage_history.entry(entry.0.clone()).or_insert(vec![0.0; self.max_history_len]);
+                let history = self
+                    .cpu_usage_history
+                    .entry(entry.0.clone())
+                    .or_insert(vec![0.0; self.max_history_len]);
                 while history.len() >= self.max_history_len {
                     history.remove(0);
                 }
@@ -43,16 +45,17 @@ impl SysDataStream for CPUMonitor {
                     Some(l) => *l,
                     None => 0.0,
                 };
-                history.extend_from_slice(utils::interpolate::<f32>(last, entry.1, self.interpolation_len).as_slice());
+                history.extend_from_slice(
+                    utils::interpolate::<f32>(last, entry.1, self.interpolation_len).as_slice(),
+                );
             }
         }
-        self.cpu_usage = cpus[0].get_cpu_usage();
+        self.cpu_usage = cpus[0].cpu_usage();
     }
 }
 
 impl CPUMonitor {
-    fn parse_cpu_info(cpu: &Processor) -> (String, f32) {
-        (String::from(cpu.get_name()), cpu.get_cpu_usage())
+    fn parse_cpu_info(cpu: &Cpu) -> (String, f32) {
+        (String::from(cpu.name()), cpu.cpu_usage())
     }
 }
-

@@ -1,6 +1,7 @@
-use termion::event;
+use crossterm::event;
 
 pub enum Event {
-    Input(event::Key),
+    Input(event::KeyCode),
+    Scroll(event::MouseEventKind),
     Tick,
 }

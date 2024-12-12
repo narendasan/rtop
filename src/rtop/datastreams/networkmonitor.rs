@@ -1,30 +1,35 @@
-use sysinfo::{System, SystemExt, NetworkExt};
 use crate::rtop::datastreams::datastream::SysDataStream;
-
+use sysinfo::{Networks, System};
 
 pub struct NetworkMonitor {
+    nets: Networks,
     pub net_in_history: Vec<u64>,
-    pub net_out_history: Vec<u64>, 
+    pub net_out_history: Vec<u64>,
     pub net_in: u64,
-    pub net_out: u64, 
+    pub net_out: u64,
     max_sparkline_len: usize,
 }
 
 impl SysDataStream for NetworkMonitor {
-    fn new(_max_hist_len: usize, _inter_len: u16) -> Self {        
+    fn new(_max_hist_len: usize, _inter_len: u16) -> Self {
         Self {
             net_in_history: Vec::new(),
-            net_out_history: Vec::new(), 
-            net_in: 0, //in bits
+            net_out_history: Vec::new(),
+            net_in: 0,  //in bits
             net_out: 0, //in bits
             max_sparkline_len: 50,
+            nets: Networks::new_with_refreshed_list(),
         }
     }
 
-    fn poll(&mut self, system_info: &System) {
-        let net = system_info.get_network();
-        self.net_in = net.get_income() * 8;
-        self.net_out = net.get_outcome() * 8;
+    fn poll(&mut self, _: &System) {
+        self.nets.refresh(true);
+        self.net_in = self.nets.iter().fold(0 as u64, |sum, (_, data)| -> u64 {
+            sum + data.received() as u64
+        }) * 8 as u64;
+        self.net_out = self.nets.iter().fold(0 as u64, |sum, (_, data)| -> u64 {
+            sum + data.transmitted() as u64
+        }) * 8 as u64;
 
         let (inc, out) = NetworkMonitor::parse_networking_info((self.net_in, self.net_out));
 
