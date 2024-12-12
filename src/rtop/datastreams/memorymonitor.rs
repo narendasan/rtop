@@ -1,4 +1,4 @@
-use sysinfo::{System, SystemExt};
+use sysinfo::System;
 
 use crate::rtop::datastreams::{datastream::SysDataStream, utils};
 
@@ -10,7 +10,7 @@ pub struct MemoryMonitor {
     pub swap_usage_history: Vec<f64>,
     pub total_swap: u64,
     max_history_len: usize,
-    interpolation_len: u16
+    interpolation_len: u16,
 }
 
 impl SysDataStream for MemoryMonitor {
@@ -23,15 +23,15 @@ impl SysDataStream for MemoryMonitor {
             total_swap: 10,
             swap_usage_history: vec![0.0; max_hist_len],
             max_history_len: max_hist_len,
-            interpolation_len: inter_len
+            interpolation_len: inter_len,
         }
     }
 
     fn poll(&mut self, system_info: &System) {
-        self.memory_usage = system_info.get_used_memory();
-        self.total_memory = system_info.get_total_memory();
-        self.swap_usage = system_info.get_used_swap();
-        self.total_swap = system_info.get_total_swap();
+        self.memory_usage = system_info.used_memory();
+        self.total_memory = system_info.total_memory();
+        self.swap_usage = system_info.used_swap();
+        self.total_swap = system_info.total_swap();
         if self.total_swap == 0 {
             self.total_swap = 10;
         }
@@ -43,7 +43,14 @@ impl SysDataStream for MemoryMonitor {
             Some(l) => *l,
             None => 0.0,
         };
-        self.memory_usage_history.extend_from_slice(utils::interpolate(last_mem, self.memory_usage as f64 / self.total_memory as f64, self.interpolation_len).as_slice());
+        self.memory_usage_history.extend_from_slice(
+            utils::interpolate(
+                last_mem,
+                self.memory_usage as f64 / self.total_memory as f64,
+                self.interpolation_len,
+            )
+            .as_slice(),
+        );
 
         while self.swap_usage_history.len() >= self.max_history_len {
             self.swap_usage_history.remove(0);
@@ -52,7 +59,15 @@ impl SysDataStream for MemoryMonitor {
             Some(l) => *l,
             None => 0.0,
         };
-        self.swap_usage_history.push(self.swap_usage as f64 / self.total_swap as f64);
-        self.swap_usage_history.extend_from_slice(utils::interpolate(last_swap, self.swap_usage as f64 / self.total_swap as f64, self.interpolation_len).as_slice());
+        self.swap_usage_history
+            .push(self.swap_usage as f64 / self.total_swap as f64);
+        self.swap_usage_history.extend_from_slice(
+            utils::interpolate(
+                last_swap,
+                self.swap_usage as f64 / self.total_swap as f64,
+                self.interpolation_len,
+            )
+            .as_slice(),
+        );
     }
 }
