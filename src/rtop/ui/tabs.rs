@@ -3,7 +3,7 @@ pub struct Tabs<'a> {
     pub selection: usize,
 }
 
-impl<'a> Tabs<'a> {
+impl Tabs<'_> {
     pub fn next(&mut self) {
         self.selection = (self.selection + 1) % self.titles.len();
     }
