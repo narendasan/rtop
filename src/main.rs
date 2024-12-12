@@ -8,12 +8,11 @@ use std::thread;
 use std::time;
 
 use crossterm::event;
-use termion::input::MouseTerminal;
-use termion::input::TermRead;
-use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
+use ratatui::crossterm::event::EnableMouseCapture;
+use ratatui::crossterm::execute;
+use ratatui::crossterm::terminal;
+use ratatui::prelude::CrosstermBackend;
 
-use ratatui::backend::TermionBackend;
 use ratatui::Terminal;
 
 mod rtop;
@@ -58,7 +57,7 @@ fn _main() -> Result<(), Error> {
         for c in stdin.keys() {
             let evt = c.unwrap();
             input_tx.send(Event::Input(evt)).unwrap();
-            if evt == event::Key::Char('q') {
+            if evt == event::KeyCode::Char('q') {
                 break;
             }
         }
@@ -72,10 +71,10 @@ fn _main() -> Result<(), Error> {
         }
     });
 
+    terminal::enable_raw_mode()?;
     let stdout = io::stdout().into_raw_mode()?;
-    let stdout = MouseTerminal::from(stdout);
-    let stdout = AlternateScreen::from(stdout);
-    let backend = TermionBackend::new(stdout);
+    execute!(stdout, terminal::EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
     terminal.hide_cursor()?;
