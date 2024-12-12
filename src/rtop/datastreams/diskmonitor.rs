@@ -33,7 +33,7 @@ impl DiskMonitor {
         let fs = disk.file_system().to_str().unwrap().to_string();
         (
             String::from(name),
-            String::from(fs),
+            fs,
             disk.total_space() - disk.available_space(),
             disk.total_space(),
         )

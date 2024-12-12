@@ -39,7 +39,7 @@ fn main() -> std::io::Result<()> {
                 Some(p) => format!("{}", p.display()),
                 None => return Err(std::io::Error::new(std::io::ErrorKind::Other, "Failed to find path to home directory"))
             };
-            fs::symlink(&format!("/usr/lib/nvidia-{}/libnvidia-ml.so", nvidia_driver_version), &format!("{}/.local/lib/libnvidia-ml.so", home_dir))?;
+            fs::symlink(format!("/usr/lib/nvidia-{}/libnvidia-ml.so", nvidia_driver_version), format!("{}/.local/lib/libnvidia-ml.so", home_dir))?;
         }
     }
     Ok(())

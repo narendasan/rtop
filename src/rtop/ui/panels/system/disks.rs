@@ -26,7 +26,7 @@ pub fn disk_usage_panel(f: &mut Frame, app: &App, area: Rect) {
         .take(app.datastreams.disk_info.disk_usage.len())
     {
         let drive = &app.datastreams.disk_info.disk_usage[drive_num];
-        let label = drive.0.clone() + &(" (%)").to_string();
+        let label = drive.0.clone() + (" (%)");
         let usage = (drive.2 as f64 / drive.3 as f64) * 100.0;
         let chunk = Layout::default()
             .direction(Direction::Vertical)

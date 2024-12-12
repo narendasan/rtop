@@ -8,7 +8,6 @@ use std::thread;
 use std::time;
 
 use crossterm::event;
-use ratatui::crossterm::event::EnableMouseCapture;
 use ratatui::crossterm::execute;
 use ratatui::crossterm::terminal;
 use ratatui::prelude::CrosstermBackend;

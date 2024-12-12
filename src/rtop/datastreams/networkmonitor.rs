@@ -24,12 +24,12 @@ impl SysDataStream for NetworkMonitor {
 
     fn poll(&mut self, _: &System) {
         self.nets.refresh(true);
-        self.net_in = self.nets.iter().fold(0 as u64, |sum, (_, data)| -> u64 {
-            sum + data.received() as u64
-        }) * 8 as u64;
-        self.net_out = self.nets.iter().fold(0 as u64, |sum, (_, data)| -> u64 {
-            sum + data.transmitted() as u64
-        }) * 8 as u64;
+        self.net_in = self.nets.iter().fold(0_u64, |sum, (_, data)| -> u64 {
+            sum + data.received()
+        }) * 8_u64;
+        self.net_out = self.nets.iter().fold(0_u64, |sum, (_, data)| -> u64 {
+            sum + data.transmitted()
+        }) * 8_u64;
 
         let (inc, out) = NetworkMonitor::parse_networking_info((self.net_in, self.net_out));
 

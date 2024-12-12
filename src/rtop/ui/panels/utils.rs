@@ -9,7 +9,7 @@ pub fn scrolling<T: Clone>(area: Rect, absolute_postion: usize, data: &[T]) -> (
     };
 
     let mut displayed_data = data.to_vec();
-    if absolute_postion > capacity as usize {
+    if absolute_postion > capacity {
         let cutoff = absolute_postion - capacity;
         displayed_data = displayed_data[cutoff..].to_vec();
     }
