@@ -13,7 +13,7 @@ pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App) -> Result<(), io::Erro
         let sub_areas = Layout::default()
             .direction(Direction::Vertical)
             .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
-            .split(f.size());
+            .split(f.area());
 
         render_tab_bar(&mut f, app, sub_areas[0]);
         #[allow(clippy::single_match)]
@@ -27,13 +27,14 @@ pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App) -> Result<(), io::Erro
             }
             _ => {}
         };
-    })
+    });
+    Ok(())
 }
 
 fn render_tab_bar(f: &mut Frame, app: &App, area: Rect) {
     let tabs = Tabs::default()
         .block(Block::default().borders(Borders::ALL).title("Tabs"))
-        .titles(&app.tabs.titles)
+        .titles(app.tabs.titles.clone())
         .style(Style::default().fg(Color::Green))
         .highlight_style(Style::default().fg(Color::Yellow))
         .select(app.tabs.selection);

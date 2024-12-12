@@ -29,7 +29,7 @@ impl SysDataStream for CPUMonitor {
         let cpus = system_info.cpus();
 
         self.cpu_core_info.clear();
-        for cpu in &cpus[1..cpus.len()] {
+        for cpu in &cpus[0..cpus.len()] {
             let info = CPUMonitor::parse_cpu_info(cpu);
             self.cpu_core_info.push(info);
             if let Some(entry) = self.cpu_core_info.last() {

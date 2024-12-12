@@ -78,7 +78,7 @@ fn _main() -> Result<(), Error> {
 
     terminal::enable_raw_mode()?;
     let mut stdout = io::stdout();
-    execute!(stdout, terminal::EnterAlternateScreen, EnableMouseCapture)?;
+    execute!(stdout, terminal::EnterAlternateScreen,)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
@@ -116,5 +116,6 @@ fn _main() -> Result<(), Error> {
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();
+    terminal::disable_raw_mode();
     Ok(())
 }

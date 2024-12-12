@@ -8,7 +8,7 @@ readme = "README.md"
 keywords = ["system", "monitor", "info", "usage", "gpu"]
 categories = ["development-tools"]
 license = "NCSA"
-edition = "2018"
+edition = "2021"
 build = "build.rs"
 
 [features]

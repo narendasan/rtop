@@ -17,7 +17,7 @@ pub fn disk_usage_panel(f: &mut Frame, app: &App, area: Rect) {
     let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
         .margin(1)
-        .constraints(constraints.as_ref())
+        .constraints(constraints)
         .split(area);
 
     for (drive_num, a) in sub_areas
@@ -37,7 +37,11 @@ pub fn disk_usage_panel(f: &mut Frame, app: &App, area: Rect) {
         let data = [(&format!("{:.1}%", usage)[..], usage as u64)];
 
         let chart = BarChart::default()
-            .block(Block::default().title(&(label)).borders(Borders::NONE))
+            .block(
+                Block::default()
+                    .title(label.as_str())
+                    .borders(Borders::NONE),
+            )
             .data(&data)
             .bar_width(5)
             .bar_gap(0)
@@ -58,10 +62,10 @@ pub fn disk_usage_panel(f: &mut Frame, app: &App, area: Rect) {
                     } else {
                         Color::LightRed
                     })
-                    .modifier(Modifier::BOLD),
+                    .add_modifier(Modifier::BOLD),
             );
 
-        f.render_widget(panel, area);
+        f.render_widget(&panel, area);
         f.render_widget(chart, chunk[0]);
     }
 }

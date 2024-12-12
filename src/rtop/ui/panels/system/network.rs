@@ -21,13 +21,13 @@ pub fn network_info_panel(f: &mut Frame, app: &App, area: Rect) {
         .split(area);
 
     let net_in = Sparkline::default()
-        .block(Block::default().title(&app.net_in_str))
+        .block(Block::default().title(app.net_in_str.clone()))
         .style(Style::default().fg(Color::Green))
         .data(&app.datastreams.net_info.net_in_history)
         .max(1_000_000);
 
     let net_out = Sparkline::default()
-        .block(Block::default().title(&app.net_out_str))
+        .block(Block::default().title(app.net_out_str.clone()))
         .style(Style::default().fg(Color::Green))
         .data(&app.datastreams.net_info.net_out_history)
         .max(1_000_000);

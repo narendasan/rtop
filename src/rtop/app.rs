@@ -157,7 +157,7 @@ impl<'a> App<'a> {
                     panic!("Cannot get CPU ID");
                 }
 
-                let core_label = core_num.to_string();
+                let core_label = (core_num + 1).to_string();
                 core_name = format!(
                     "Core: {} ({:.2}%)",
                     core_label,
@@ -219,37 +219,6 @@ impl<'a> App<'a> {
         #[cfg(feature = "battery-monitor")]
         {
             self.battery_level = self.datastreams.battery_info.battery_lvl;
-            self.battery_status = match self.datastreams.battery_info.charging_status {
-                ChargingStatus::Discharging(time) => {
-                    let remaining_time = App::time_from_secs(time);
-                    format!("🔋 On Battery (Time to empty: {})", remaining_time)
-                }
-                ChargingStatus::Charging(time) => {
-                    let remaining_time = App::time_from_secs(time);
-                    format!("⚡ Charging (Time to full: {})", remaining_time)
-                }
-                ChargingStatus::Full => "🔌  Connected to Power".to_string(),
-                ChargingStatus::Empty => "😵 Empty Battery".to_string(),
-                ChargingStatus::Unknown => "Unknown".to_string(),
-            } + &format!(
-                "\n⚕️ Battery Health: {:.2}% (Cycle count: {})",
-                self.datastreams.battery_info.health, self.datastreams.battery_info.cycle_count
-            ) + &format!(
-                "\n〽️ Power Draw: {:.2}W ⚡ Voltage: {:.2}V 🌡  Temperature: {}",
-                self.datastreams.battery_info.power_draw,
-                self.datastreams.battery_info.voltage,
-                self.datastreams.battery_info.temp
-            ) + &format!(
-                "\nBattery Energy: {:.2}/{:.2}Wh (Designed Capacity: {:.2}Wh)",
-                self.datastreams.battery_info.energy,
-                self.datastreams.battery_info.energy_full,
-                self.datastreams.battery_info.designed_energy_full
-            ) + &format!(
-                "\nModel: {} Serial: {} Kind: {}",
-                self.datastreams.battery_info.model,
-                self.datastreams.battery_info.serial,
-                self.datastreams.battery_info.kind
-            );
         }
         #[cfg(feature = "gpu-monitor")]
         //GPU Usage Parsing
@@ -321,7 +290,7 @@ impl<'a> App<'a> {
     }
 
     #[cfg(feature = "battery-monitor")]
-    fn time_from_secs(secs: u64) -> String {
+    pub fn time_from_secs(secs: u64) -> String {
         let hrs = secs / 3600;
         let mut remainder = secs % 3600;
         let mins = remainder / 60;
