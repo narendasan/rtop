@@ -1,13 +1,12 @@
-
-use std::io;
 use crate::rtop::app::App;
 use crate::rtop::ui::renderer::*;
+use std::io;
 
-use tui::{Terminal, Frame};
-use tui::backend::Backend;
-use tui::widgets::{Block, Borders, Tabs};
-use tui::layout::{Direction, Layout, Rect, Constraint};
-use tui::style::{Color, Style};
+use ratatui::backend::Backend;
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::style::{Color, Style};
+use ratatui::widgets::{Block, Borders, Tabs};
+use ratatui::{Frame, Terminal};
 
 pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App) -> Result<(), io::Error> {
     t.draw(|mut f| {
@@ -31,8 +30,7 @@ pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App) -> Result<(), io::Erro
     })
 }
 
-
-fn render_tab_bar<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+fn render_tab_bar(f: &mut Frame, app: &App, area: Rect) {
     let tabs = Tabs::default()
         .block(Block::default().borders(Borders::ALL).title("Tabs"))
         .titles(&app.tabs.titles)

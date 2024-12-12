@@ -1,13 +1,13 @@
-use sysinfo::System as SysInfoSystem;
-use sysinfo::SystemExt;
-#[cfg(feature = "gpu-monitor")]
-use nvml_wrapper::NVML;
 #[cfg(feature = "battery-monitor")]
 use battery::Manager;
+#[cfg(feature = "gpu-monitor")]
+use nvml_wrapper::NVML;
+use sysinfo::System as SysInfoSystem;
 
+use crate::rtop::datastreams::{
+    CPUMonitor, DiskMonitor, MemoryMonitor, NetworkMonitor, ProcessMonitor, SysDataStream,
+};
 use crate::rtop::error::Error;
-use crate::rtop::datastreams::{SysDataStream, DiskMonitor, MemoryMonitor,
-                              CPUMonitor, NetworkMonitor, ProcessMonitor};
 
 #[cfg(feature = "battery-monitor")]
 use crate::rtop::datastreams::{BatteryDataStream, BatteryMonitor};
@@ -31,7 +31,7 @@ pub struct AppDataStreams {
     pub battery_info_src: Manager,
 }
 
-impl <'a> AppDataStreams {
+impl<'a> AppDataStreams {
     pub fn new(history_len: usize, interpolation_len: u16) -> Result<Self, Error> {
         Ok(Self {
             disk_info: SysDataStream::new(history_len, interpolation_len),
@@ -47,7 +47,7 @@ impl <'a> AppDataStreams {
             #[cfg(feature = "battery-monitor")]
             battery_info_src: Manager::new()?,
             #[cfg(feature = "gpu-monitor")]
-            gpu_info_src: NVML::init()?
+            gpu_info_src: NVML::init()?,
         })
     }
 

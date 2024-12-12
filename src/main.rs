@@ -52,15 +52,20 @@ fn _main() -> Result<(), Error> {
     let (tx, rx) = mpsc::channel();
     let input_tx = tx.clone();
 
-    thread::spawn(move || {
-        let stdin = io::stdin();
-        for c in stdin.keys() {
-            let evt = c.unwrap();
-            input_tx.send(Event::Input(evt)).unwrap();
-            if evt == event::KeyCode::Char('q') {
-                break;
+    thread::spawn(move || -> Result<_, Error> {
+        loop {
+            if event::poll(time::Duration::from_millis(500))? {
+                if let event::Event::Key(key) = event::read()? {
+                    if key.kind == event::KeyEventKind::Press {
+                        input_tx.send(Event::Input(key.code)).unwrap();
+                        if key.code == event::KeyCode::Char('q') {
+                            break;
+                        }
+                    }
+                }
             }
         }
+        Ok(())
     });
 
     thread::spawn(move || {
@@ -72,7 +77,7 @@ fn _main() -> Result<(), Error> {
     });
 
     terminal::enable_raw_mode()?;
-    let stdout = io::stdout().into_raw_mode()?;
+    let mut stdout = io::stdout();
     execute!(stdout, terminal::EnterAlternateScreen, EnableMouseCapture)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
@@ -82,30 +87,31 @@ fn _main() -> Result<(), Error> {
     let clk_split = 0;
 
     loop {
-        let evt = rx.recv().unwrap();
-        {
-            match evt {
-                Event::Scroll(mouse_scroll) => match mouse_scroll {
-                    event::MouseEvent::ScrollUp => app.input_handler(event::KeyCode::Up),
-                    event::MouseEvent::ScrollDown => app.input_handler(event::KeyCode::Down),
-                    _ => {}
-                },
-                Event::Input(input) => {
-                    if let Some(command) = app.input_handler(input) {
-                        match command {
-                            Cmd::Quit => break,
-                            //_ => (),
-                        }
-                    }
+        let evt = rx.recv()?;
+        match evt {
+            Event::Scroll(mouse_scroll) => match mouse_scroll {
+                event::MouseEventKind::ScrollUp => {
+                    app.input_handler(event::KeyCode::Up);
                 }
-                Event::Tick => {
-                    if clk_split % 2 == 0 {
-                        app.update()?;
+                event::MouseEventKind::ScrollDown => {
+                    app.input_handler(event::KeyCode::Down);
+                }
+                _ => {}
+            },
+            Event::Input(input) => {
+                if let Some(command) = app.input_handler(input) {
+                    match command {
+                        Cmd::Quit => break,
+                        //_ => (),
                     }
                 }
             }
+            Event::Tick => {
+                if clk_split % 2 == 0 {
+                    app.update()?;
+                }
+            }
         }
-
         render(&mut terminal, &app)?;
     }
     terminal.show_cursor().unwrap();

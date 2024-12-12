@@ -1,15 +1,21 @@
 use crate::rtop::app::App;
 
-use tui::Frame;
-use tui::backend::Backend;
-use tui::widgets::{Block, Borders, Text, Paragraph};
-use tui::layout::{Rect};
-use tui::style::{Color, Style, Modifier};
+use ratatui::backend::Backend;
+use ratatui::layout::Rect;
+use ratatui::style::{Color, Modifier, Style};
+use ratatui::widgets::{Block, Borders, Paragraph, Text};
+use ratatui::Frame;
 
-pub fn driver_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    let text =  [
-        Text::raw(format!(" Driver Version: {}\n", app.datastreams.gpu_info.driver_version)),
-        Text::raw(format!(" CUDA Version: {}", app.datastreams.gpu_info.cuda_version)),
+pub fn driver_panel(f: &mut Frame, app: &App, area: Rect) {
+    let text = [
+        Text::raw(format!(
+            " Driver Version: {}\n",
+            app.datastreams.gpu_info.driver_version
+        )),
+        Text::raw(format!(
+            " CUDA Version: {}",
+            app.datastreams.gpu_info.cuda_version
+        )),
     ];
 
     let block = Block::default()

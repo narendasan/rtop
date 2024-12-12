@@ -1,25 +1,29 @@
 use crate::rtop::app::App;
 
-use tui::Frame;
-use tui::backend::Backend;
-use tui::widgets::{Axis, Block, Borders, Chart, Dataset};
-use tui::symbols::Marker;
-use tui::layout::Rect;
-use tui::style::{Color, Modifier, Style};
+use ratatui::layout::Rect;
+use ratatui::style::{Color, Modifier, Style};
+use ratatui::symbols::Marker;
+use ratatui::widgets::{Axis, Block, Borders, Chart, Dataset};
+use ratatui::Frame;
 
-pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
-    let mut data = app.cpu_panel_memory.iter()
-                                    .map(|x| {(*x.0, (x.1).0.clone(), (x.1).1.clone())})
-                                    .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
+pub fn cpu_usage_history_panel(f: &mut Frame, app: &App, area: Rect) {
+    let mut data = app
+        .cpu_panel_memory
+        .iter()
+        .map(|x| (*x.0, (x.1).0.clone(), (x.1).1.clone()))
+        .collect::<Vec<(u32, String, Vec<(f64, f64)>)>>();
     data.sort_by_key(|k| k.0);
 
-    let datasets = &data.iter().map(|x| {
-        Dataset::default()
-            .name(&x.1)
-            .marker(Marker::Braille)
-            .style(Style::default().fg(color_map(x.0)))
-            .data(&x.2)
-    }).collect::<Vec<Dataset>>();
+    let datasets = &data
+        .iter()
+        .map(|x| {
+            Dataset::default()
+                .name(&x.1)
+                .marker(Marker::Braille)
+                .style(Style::default().fg(color_map(x.0)))
+                .data(&x.2)
+        })
+        .collect::<Vec<Dataset>>();
 
     let cpu_usage = Chart::default()
         .block(
@@ -49,20 +53,18 @@ pub fn cpu_usage_history_panel<B: Backend>(f: &mut Frame<B>, app: &App, area: Re
     f.render_widget(cpu_usage, area);
 }
 
-
-
 fn color_map(key: u32) -> Color {
     match key % 10 {
-        0 => {Color::Red},
-        1 => {Color::Green},
-        2 => {Color::Yellow},
-        3 => {Color::Magenta},
-        4 => {Color::Cyan},
-        5 => {Color::LightRed},
-        6 => {Color::LightGreen},
-        7 => {Color::LightYellow},
-        8 => {Color::LightMagenta},
-        9 => {Color::LightCyan},
-        _ => {Color::White},
+        0 => Color::Red,
+        1 => Color::Green,
+        2 => Color::Yellow,
+        3 => Color::Magenta,
+        4 => Color::Cyan,
+        5 => Color::LightRed,
+        6 => Color::LightGreen,
+        7 => Color::LightYellow,
+        8 => Color::LightMagenta,
+        9 => Color::LightCyan,
+        _ => Color::White,
     }
 }

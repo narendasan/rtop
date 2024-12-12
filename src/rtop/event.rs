@@ -1,7 +1,7 @@
 use crossterm::event;
 
 pub enum Event {
-    Input(event::KeyEvent),
-    Scroll(event::MouseEvent),
+    Input(event::KeyCode),
+    Scroll(event::MouseEventKind),
     Tick,
 }
