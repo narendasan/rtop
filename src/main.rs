@@ -1,43 +1,45 @@
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 
 use std::io;
+use std::process::exit;
+use std::sync::mpsc;
 use std::thread;
 use std::time;
-use std::sync::mpsc;
-use std::process::exit;
 
-use termion::event;
-use termion::input::TermRead;
+use crossterm::event;
 use termion::input::MouseTerminal;
+use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::screen::AlternateScreen;
 
-use tui::Terminal;
-use tui::backend::TermionBackend;
+use ratatui::backend::TermionBackend;
+use ratatui::Terminal;
 
 mod rtop;
 
 use crate::rtop::app::App;
 use crate::rtop::cmd::Cmd;
-use crate::rtop::event::Event;
 use crate::rtop::error::Error;
+use crate::rtop::event::Event;
 use crate::rtop::ui::renderer::render;
 
 fn main() {
     exit(match _main() {
-       Ok(_) => 0,
-       Err(err) => {
-           eprintln!("error: {:?}", err);
-           1
-       }
+        Ok(_) => 0,
+        Err(err) => {
+            eprintln!("error: {:?}", err);
+            1
+        }
     });
 }
 
 fn _main() -> Result<(), Error> {
-    stderrlog::new().module(module_path!())
-                    .verbosity(4)
-                    .init()
-                    .unwrap();
+    stderrlog::new()
+        .module(module_path!())
+        .verbosity(4)
+        .init()
+        .unwrap();
 
     debug!("Start");
     #[cfg(feature = "gpu-monitor")]
@@ -84,14 +86,19 @@ fn _main() -> Result<(), Error> {
         let evt = rx.recv().unwrap();
         {
             match evt {
+                Event::Scroll(mouse_scroll) => match mouse_scroll {
+                    event::MouseEvent::ScrollUp => app.input_handler(event::KeyCode::Up),
+                    event::MouseEvent::ScrollDown => app.input_handler(event::KeyCode::Down),
+                    _ => {}
+                },
                 Event::Input(input) => {
                     if let Some(command) = app.input_handler(input) {
                         match command {
-                            Cmd::Quit => {break},
+                            Cmd::Quit => break,
                             //_ => (),
                         }
                     }
-                },
+                }
                 Event::Tick => {
                     if clk_split % 2 == 0 {
                         app.update()?;
