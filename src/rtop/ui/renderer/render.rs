@@ -23,11 +23,11 @@ pub fn render<B: Backend>(t: &mut Terminal<B>, app: &App) -> Result<(), io::Erro
             }
             #[cfg(feature = "gpu-monitor")]
             1 => {
-                gpu_tab::render_gpu_tab(&mut f, app, sub_areas[1]);
+                gpu_tab::render_gpu_tab(f, app, sub_areas[1]);
             }
             _ => {}
         };
-    });
+    })?;
     Ok(())
 }
 

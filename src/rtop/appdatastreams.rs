@@ -5,7 +5,11 @@ use crate::rtop::error::Error;
 #[cfg(feature = "battery-monitor")]
 use battery::Manager;
 #[cfg(feature = "gpu-monitor")]
-use nvml_wrapper::NVML;
+use nvml_wrapper::Nvml;
+#[cfg(feature = "gpu-monitor")]
+use std::ffi::OsStr;
+#[cfg(feature = "gpu-monitor")]
+use std::fs::exists;
 use sysinfo::System as SysInfoSystem;
 
 #[cfg(feature = "battery-monitor")]
@@ -25,7 +29,7 @@ pub struct AppDataStreams {
     pub battery_info: BatteryMonitor,
     pub sys_info_src: SysInfoSystem,
     #[cfg(feature = "gpu-monitor")]
-    pub gpu_info_src: NVML,
+    pub gpu_info_src: Nvml,
     #[cfg(feature = "battery-monitor")]
     pub battery_info_src: Manager,
 }
@@ -46,7 +50,9 @@ impl<'a> AppDataStreams {
             #[cfg(feature = "battery-monitor")]
             battery_info_src: Manager::new()?,
             #[cfg(feature = "gpu-monitor")]
-            gpu_info_src: NVML::init()?,
+            gpu_info_src: Nvml::builder()
+                .lib_path(OsStr::new(&get_nvml_install_path()?))
+                .init()?,
         })
     }
 
@@ -66,7 +72,45 @@ impl<'a> AppDataStreams {
         #[cfg(feature = "battery-monitor")]
         self.battery_info.poll(&self.battery_info_src)?;
         #[cfg(feature = "gpu-monitor")]
-        self.gpu_info.poll(&self.gpu_info_src)?;
+        self.gpu_info.poll(&self.sys_info_src, &self.gpu_info_src)?;
         Ok(())
+    }
+}
+
+#[cfg(feature = "gpu-monitor")]
+fn get_nvml_install_path() -> Result<String, Error> {
+    let potential_install_locations = vec![
+        "/usr/lib/x86_64-linux-gnu".to_string(),
+        "/usr/lib/aarch64-linux-gnu".to_string(),
+    ];
+
+    let mut install_location: Option<String> = None;
+    for loc in potential_install_locations {
+        match exists(format!("{}/libnvidia-ml.so.1", loc)) {
+            Ok(e) => {
+                if e {
+                    install_location = Some(loc.to_string());
+                    break;
+                }
+            }
+            Err(_) => {
+                return Err(Error::from(std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("Could not determine if libnvidia-ml.so.1 exists at {}", loc),
+                )))
+            }
+        }
+    }
+
+    match install_location {
+        Some(loc) => {
+            return Ok(format!("{}/libnvidia-ml.so.1", loc));
+        }
+        None => {
+            return Err(Error::from(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Unable to find libnvidia-ml.so.1",
+            )))
+        }
     }
 }

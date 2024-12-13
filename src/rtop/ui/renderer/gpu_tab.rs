@@ -1,11 +1,10 @@
 use crate::rtop::app::App;
 use crate::rtop::ui::panels::gpu::*;
 
-use ratatui::backend::Backend;
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::Frame;
 
-pub fn render_gpu_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+pub fn render_gpu_tab(f: &mut Frame, app: &App, area: Rect) {
     let sub_areas = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
@@ -25,7 +24,7 @@ pub fn render_gpu_tab<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     processes_panel(f, app, sub_areas[3]);
 }
 
-fn render_charts<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
+fn render_charts(f: &mut Frame, app: &App, area: Rect) {
     let sub_areas = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
@@ -45,12 +44,7 @@ fn render_charts<B: Backend>(f: &mut Frame<B>, app: &App, area: Rect) {
     );
 }
 
-fn render_half<B: Backend>(
-    f: &mut Frame<B>,
-    app: &App,
-    area: Rect,
-    panels: Vec<&dyn Fn(&mut Frame<B>, &App, Rect)>,
-) {
+fn render_half(f: &mut Frame, app: &App, area: Rect, panels: Vec<&dyn Fn(&mut Frame, &App, Rect)>) {
     let sub_areas = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())

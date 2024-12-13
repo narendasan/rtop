@@ -115,6 +115,6 @@ fn _main() -> Result<(), Error> {
     }
     terminal.show_cursor().unwrap();
     terminal.clear().unwrap();
-    terminal::disable_raw_mode();
+    terminal::disable_raw_mode()?;
     Ok(())
 }
