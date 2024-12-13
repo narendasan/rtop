@@ -1,19 +1,18 @@
 use std::collections::HashMap;
 
-use sysinfo::{System, SystemExt, Pid, ProcessExt};
+use sysinfo::{Pid, System};
 
 //use ::phf::phf_map;
 
 extern crate nvml_wrapper as nvml;
 //use nvml_wrapper as nvml;
-use self::nvml::{NVML, Device};
-use self::nvml::enum_wrappers::device::{TemperatureSensor, Clock};
+use self::nvml::enum_wrappers::device::{Clock, TemperatureSensor};
 use self::nvml::enums::device::UsedGpuMemory;
 use self::nvml::struct_wrappers::device::ProcessInfo;
+use self::nvml::{Device, Nvml};
 
-use crate::rtop::error::Error;
 use crate::rtop::datastreams::{datastream::GPUDataStream, utils};
-
+use crate::rtop::error::Error;
 
 //#[derive(Debug, Clone)]
 // pub struct GPUClks {
@@ -65,48 +64,51 @@ pub struct GPUProcess {
     pub pid: u32,
     pub name: String,
     pub mem: Option<u64>,
-    pub proc_type: GPUProcessType
+    pub proc_type: GPUProcessType,
 }
 
 impl GPUProcess {
-    fn new(proc: Option<&ProcessInfo>, device: u32, proc_type: GPUProcessType) -> Self {
-        match proc {
-            Some(p) => {
-                let sys: System = SystemExt::new();
-                Self {
-                    device_id: device,
-                    pid: p.pid,
-                    name: match sys.get_process(p.pid as Pid) {
-                        Some(n) => {
-                            let mut cmd = n.name().clone().split_whitespace();
-                            match cmd.next() {
-                                Some(name) => name.to_string(),
-                                None => "UNKNOWN".to_string()
-                            }
-                        },
-                        None => "unknown".to_string()
-                    },
-                    mem: match p.used_gpu_memory {
-                        UsedGpuMemory::Used(u) => Some(u),
-                        UsedGpuMemory::Unavailable => None
-                    },
-                    proc_type: proc_type,
+    fn new(
+        proc: &ProcessInfo,
+        device: u32,
+        proc_type: GPUProcessType,
+        system_info: &System,
+    ) -> Self {
+        Self {
+            device_id: device,
+            pid: proc.pid,
+            name: match system_info.processes().get(&Pid::from(proc.pid as usize)) {
+                Some(n) => {
+                    let mut cmd = n
+                        .name()
+                        .to_str()
+                        .expect("Could not coerce OsStr to &str")
+                        .split_whitespace();
+                    match cmd.next() {
+                        Some(name) => name.to_string(),
+                        None => "UNKNOWN".to_string(),
+                    }
                 }
+                None => "unknown".to_string(),
             },
-            None => {
-                Self {
-                    device_id: 0,
-                    pid: 0,
-                    name: "UNKNOWN".to_string(),
-                    mem: None,
-                    proc_type: GPUProcessType::Unknown
-                }
-            }
+            mem: match proc.used_gpu_memory {
+                UsedGpuMemory::Used(u) => Some(u),
+                UsedGpuMemory::Unavailable => None,
+            },
+            proc_type,
         }
     }
 
-    fn proc_list(procs: &Vec<ProcessInfo>, device: u32, proc_type: GPUProcessType) -> Vec<GPUProcess> {
-        procs.iter().map(|p| GPUProcess::new(Some(&p.clone()), device, proc_type.clone())).collect()
+    fn proc_list(
+        procs: &Vec<ProcessInfo>,
+        device: u32,
+        proc_type: GPUProcessType,
+        system_info: &System,
+    ) -> Vec<GPUProcess> {
+        procs
+            .iter()
+            .map(|p| GPUProcess::new(&p, device, proc_type.clone(), system_info))
+            .collect()
     }
 }
 
@@ -128,7 +130,7 @@ pub struct GPUDeviceInfo {
 impl GPUDeviceInfo {
     fn new(id: u32, gpu: &Device) -> Result<Self, Error> {
         let new = Self {
-            id: id,
+            id,
             name: gpu.name()?,
             bus_id: gpu.pci_info()?.bus_id,
             max_sm_clock: gpu.max_clock_info(Clock::SM)?,
@@ -152,11 +154,10 @@ impl GPUDeviceInfo {
     }
 }
 
-
 pub struct GPUMonitor {
     pub names: HashMap<u32, String>, //Device ID, Name
     pub device_info: HashMap<u32, GPUDeviceInfo>,
-    pub temps: HashMap<u32, u32>, //Device ID, Temps
+    pub temps: HashMap<u32, u32>,             //Device ID, Temps
     pub temp_history: HashMap<u32, Vec<f64>>, //Device ID, Temps
     pub memory_usage: HashMap<u32, u64>,
     pub memory_usage_history: HashMap<u32, Vec<f64>>, //Device ID, mem (GB)
@@ -196,20 +197,20 @@ impl GPUDataStream for GPUMonitor {
             gpu_util_history: HashMap::new(),
             processes: vec![],
             interpolation_len: inter_len,
-            max_history_len: max_hist_len
+            max_history_len: max_hist_len,
         }
     }
 
-    fn init(&mut self, nvml: &NVML) -> Result<(), Error> {
-
+    fn init(&mut self, nvml: &Nvml) -> Result<(), Error> {
         self.driver_version = nvml.sys_driver_version()?;
         self.cuda_version = GPUMonitor::cuda_version(nvml.sys_cuda_driver_version()?);
         let num_gpus = match nvml.device_count() {
             Ok(n) => n,
             Err(_e) => 0,
         };
-        let gpus: Vec<(u32, Device)> = (0..num_gpus).map(|id| (id, nvml.device_by_index(id).unwrap()))
-        .collect();
+        let gpus: Vec<(u32, Device)> = (0..num_gpus)
+            .map(|id| (id, nvml.device_by_index(id).unwrap()))
+            .collect();
 
         for (id, gpu) in &gpus {
             //Static
@@ -222,17 +223,21 @@ impl GPUDataStream for GPUMonitor {
         Ok(())
     }
 
-    fn poll(&mut self, nvml: &NVML) -> Result<(), Error> {
+    fn poll(&mut self, system_info: &System, nvml: &Nvml) -> Result<(), Error> {
         let num_gpus = match nvml.device_count() {
             Ok(n) => n,
             Err(_e) => 0,
         };
-        let gpus: Vec<(u32, Device)> = (0..num_gpus).map(|id| (id, nvml.device_by_index(id).unwrap()))
-                                                    .collect();
+        let gpus: Vec<(u32, Device)> = (0..num_gpus)
+            .map(|id| (id, nvml.device_by_index(id).unwrap()))
+            .collect();
         for (id, gpu) in &gpus {
             let gpu_temp = gpu.temperature(TemperatureSensor::Gpu)?;
             self.temps.insert(*id, gpu_temp);
-            let temp_history = self.temp_history.entry(*id).or_insert(vec![0.0; self.max_history_len]);
+            let temp_history = self
+                .temp_history
+                .entry(*id)
+                .or_insert(vec![0.0; self.max_history_len]);
             while temp_history.len() >= self.max_history_len {
                 temp_history.remove(0);
             }
@@ -240,11 +245,16 @@ impl GPUDataStream for GPUMonitor {
                 Some(l) => l.clone(),
                 None => 0.0,
             };
-            temp_history.extend_from_slice(utils::interpolate(last_temp, gpu_temp as f64, self.interpolation_len).as_slice());
+            temp_history.extend_from_slice(
+                utils::interpolate(last_temp, gpu_temp as f64, self.interpolation_len).as_slice(),
+            );
 
             let mem_usage = gpu.memory_info()?.used;
             self.memory_usage.insert(*id, mem_usage);
-            let mem_usage_history = self.memory_usage_history.entry(*id).or_insert(vec![0.0; self.max_history_len]);
+            let mem_usage_history = self
+                .memory_usage_history
+                .entry(*id)
+                .or_insert(vec![0.0; self.max_history_len]);
             while mem_usage_history.len() >= self.max_history_len {
                 mem_usage_history.remove(0);
             }
@@ -252,7 +262,14 @@ impl GPUDataStream for GPUMonitor {
                 Some(l) => l.clone(),
                 None => 0.0,
             };
-            mem_usage_history.extend_from_slice(utils::interpolate(last_mem, mem_usage as f64 / *self.total_memory.get(&*id).unwrap() as f64, self.interpolation_len).as_slice());
+            mem_usage_history.extend_from_slice(
+                utils::interpolate(
+                    last_mem,
+                    mem_usage as f64 / *self.total_memory.get(&*id).unwrap() as f64,
+                    self.interpolation_len,
+                )
+                .as_slice(),
+            );
 
             // let clk = GPUClks::new(Some(gpu))?;
             // self.clks.insert(*id, clk.clone());
@@ -264,7 +281,10 @@ impl GPUDataStream for GPUMonitor {
 
             let pow = gpu.power_usage()? / 1000;
             self.power_usage.insert(*id, pow);
-            let power_history = self.power_usage_history.entry(*id).or_insert(vec![0.0; self.max_history_len]);
+            let power_history = self
+                .power_usage_history
+                .entry(*id)
+                .or_insert(vec![0.0; self.max_history_len]);
             while power_history.len() >= self.max_history_len {
                 power_history.remove(0);
             }
@@ -273,11 +293,16 @@ impl GPUDataStream for GPUMonitor {
                 Some(l) => l.clone(),
                 None => 0.0,
             };
-            power_history.extend_from_slice(utils::interpolate(last_power, pow as f64, self.interpolation_len).as_slice());
+            power_history.extend_from_slice(
+                utils::interpolate(last_power, pow as f64, self.interpolation_len).as_slice(),
+            );
 
             let util = gpu.utilization_rates()?.gpu as f64;
             self.gpu_util.insert(*id, util);
-            let gpu_util_history = self.gpu_util_history.entry(*id).or_insert(vec![0.0; self.max_history_len]);
+            let gpu_util_history = self
+                .gpu_util_history
+                .entry(*id)
+                .or_insert(vec![0.0; self.max_history_len]);
             while gpu_util_history.len() >= self.max_history_len {
                 gpu_util_history.remove(0);
             }
@@ -286,15 +311,20 @@ impl GPUDataStream for GPUMonitor {
                 Some(l) => l.clone(),
                 None => 0.0,
             };
-            gpu_util_history.extend_from_slice(utils::interpolate(last_util, util, self.interpolation_len).as_slice());
+            gpu_util_history.extend_from_slice(
+                utils::interpolate(last_util, util, self.interpolation_len).as_slice(),
+            );
 
             let cl = gpu.running_compute_processes()?;
-            let cl_processes = GPUProcess::proc_list(&cl, *id, GPUProcessType::Compute);
+            let cl_processes =
+                GPUProcess::proc_list(&cl, *id, GPUProcessType::Compute, system_info);
             let gl = gpu.running_graphics_processes()?;
-            let gl_processes = GPUProcess::proc_list(&gl, *id, GPUProcessType::Graphics);
-            let processes: Vec<GPUProcess> = vec![cl_processes, gl_processes].iter()
-                                                                             .flat_map(|p| (*p).clone())
-                                                                             .collect();
+            let gl_processes =
+                GPUProcess::proc_list(&gl, *id, GPUProcessType::Graphics, system_info);
+            let processes: Vec<GPUProcess> = vec![cl_processes, gl_processes]
+                .iter()
+                .flat_map(|p| (*p).clone())
+                .collect();
             self.processes.clear();
             self.processes = processes;
         }
@@ -304,10 +334,13 @@ impl GPUDataStream for GPUMonitor {
 
 impl GPUMonitor {
     fn cuda_version(version: i32) -> String {
-        format!("{}.{}", nvml::cuda_driver_version_major(version), nvml::cuda_driver_version_minor(version))
+        format!(
+            "{}.{}",
+            nvml::cuda_driver_version_major(version),
+            nvml::cuda_driver_version_minor(version)
+        )
     }
 }
-
 
 // static ARCH_TO_CC: phf::Map<&'static str, &'static str> = phf_map! {
 //     "G80" => "1.0",

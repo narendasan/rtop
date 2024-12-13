@@ -2,7 +2,7 @@ use crate::rtop::app::App;
 use crate::rtop::ui::panels::utils;
 
 use ratatui::layout::{Constraint, Rect};
-use ratatui::style::{Color, Style, Stylize};
+use ratatui::style::{Color, Style};
 use ratatui::widgets::{Block, Borders, Row, Table};
 use ratatui::Frame;
 
